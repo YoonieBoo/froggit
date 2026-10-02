@@ -7,3 +7,4 @@ tsconfig.json
 esbuild.mjs
 **/*.map
 playground/**
+out-test/**

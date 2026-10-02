@@ -124,6 +124,11 @@ export class Frog {
     if (this.targetX !== null) this.targetX = this.clampX(this.targetX);
   }
 
+  /** Teleports to x (e.g. where the egg was), staying inside the scene. */
+  moveTo(x: number): void {
+    this.x = this.clampX(x);
+  }
+
   /** Bugs to hunt down, in order. */
   addMeals(prey: Prey[]): void {
     this.meals.push(...prey);

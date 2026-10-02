@@ -1,6 +1,8 @@
 // Messages between the extension host and the pond webview.
 // Shared by both sides so the types can't drift apart.
-// The webview only ever receives counts — never file paths or code.
+// The webview only ever receives counts and progress — never file paths or code.
+
+import type { ProgressView } from './stages';
 
 export interface BugCounts {
   errors: number;
@@ -9,8 +11,9 @@ export interface BugCounts {
 
 /** Host → webview */
 export type HostMessage =
-  | { type: 'snapshot'; bugs: BugCounts }
-  | { type: 'bugsChanged'; bugs: BugCounts; fixed: number; added: number };
+  | { type: 'snapshot'; bugs: BugCounts; progress: ProgressView }
+  | { type: 'bugsChanged'; bugs: BugCounts; fixed: number; added: number }
+  | { type: 'progress'; progress: ProgressView; gained: number; stageUp: boolean };
 
 /** Webview → host */
 export type WebviewMessage = { type: 'ready' };

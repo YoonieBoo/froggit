@@ -64,6 +64,12 @@ export class Screen {
     return changed;
   }
 
+  /** Converts a logical pixel position to CSS pixels, for placing HTML over the canvas. */
+  toCss(x: number, y: number): { x: number; y: number } {
+    const ratio = this.scale / (window.devicePixelRatio || 1);
+    return { x: x * ratio, y: y * ratio };
+  }
+
   /** Call once per frame before drawing. */
   begin(): void {
     this.ctx.setTransform(this.scale, 0, 0, this.scale, 0, 0);

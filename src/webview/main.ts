@@ -1,6 +1,9 @@
 import type { HostMessage, WebviewMessage } from '../shared/protocol';
+import type { StageId } from '../shared/stages';
 import { Bugs } from './Bugs';
+import { Egg } from './Egg';
 import { Frog } from './Frog';
+import { Hud } from './Hud';
 import { Particles } from './Particles';
 import { Pond } from './Pond';
 import { Screen } from './renderer';
@@ -15,18 +18,27 @@ const MAX_MEALS_PER_UPDATE = 4;
 const vscode = acquireVsCodeApi();
 const canvas = document.getElementById('pond') as HTMLCanvasElement;
 const screen = new Screen(canvas);
+const hud = new Hud();
 const pond = new Pond();
 const particles = new Particles();
 const bugs = new Bugs();
+const egg = new Egg(particles);
 const frog = new Frog(particles, (prey) => bugs.remove(prey));
+
+/** null until the host's first snapshot arrives. */
+let stage: StageId | null = null;
+let hatching = false;
 
 let lastTime = performance.now();
 let lastDraw = 0;
 let elapsed = 0;
 
+const showEgg = () => stage === 'egg' || hatching;
+
 function layout(): void {
   screen.resize();
   pond.build(screen.width, screen.height);
+  egg.placeOnGround(pond.groundY, screen.width);
   frog.placeOnGround(pond.groundY, screen.width);
   bugs.setBounds(screen.width, pond.groundY);
   render();
@@ -35,7 +47,10 @@ function layout(): void {
 function render(): void {
   screen.begin();
   pond.draw(screen, elapsed);
-  frog.draw(screen);
+  if (stage !== null) {
+    if (showEgg()) egg.draw(screen, elapsed);
+    else frog.draw(screen);
+  }
   bugs.draw(screen);
   particles.draw(screen);
 }
@@ -52,19 +67,35 @@ function tick(now: number): void {
   lastTime = now;
   elapsed += dt;
 
-  frog.update(dt);
+  if (showEgg()) egg.update(dt);
+  else frog.update(dt);
   bugs.update(dt);
   particles.update(dt);
   render();
 }
 
+/** Floating text above whichever creature is on screen. */
+function floatText(message: string, big = false): void {
+  const actor = showEgg() ? egg : frog;
+  const pos = screen.toCss(actor.centerX, actor.y - (big ? 10 : 2));
+  hud.float(message, pos.x, pos.y, big);
+}
+
 function handleMessage(message: HostMessage): void {
   switch (message.type) {
     case 'snapshot':
+      stage = message.progress.stage;
+      hud.show(message.progress);
       bugs.setCounts(message.bugs);
       break;
 
     case 'bugsChanged': {
+      if (showEgg()) {
+        // An egg can't eat; it just gets excited, and fixed bugs fly away.
+        if (message.fixed > 0 || message.added > 0) egg.wobble();
+        bugs.setCounts(message.bugs);
+        break;
+      }
       // Claim prey before updating counts, so fixed bugs get eaten rather than fly off.
       if (message.fixed > 0) {
         frog.addMeals(bugs.claim(Math.min(message.fixed, MAX_MEALS_PER_UPDATE), frog.centerX));
@@ -74,6 +105,29 @@ function handleMessage(message: HostMessage): void {
       const clean = message.bugs.errors + message.bugs.warnings === 0;
       if (message.fixed > 0 && clean) frog.queueCelebration();
       else if (message.added > 0) frog.noticeSomething();
+      break;
+    }
+
+    case 'progress': {
+      hud.show(message.progress);
+      floatText(`+${message.gained} XP`);
+      if (!message.stageUp) break;
+
+      const wasEgg = stage === 'egg';
+      stage = message.progress.stage;
+      const name = message.progress.stageName;
+      if (wasEgg) {
+        hatching = true;
+        egg.hatch(() => {
+          hatching = false;
+          frog.moveTo(egg.centerX - frog.width / 2);
+          frog.queueCelebration();
+          floatText(`${name}!`, true);
+        });
+      } else {
+        frog.queueCelebration();
+        floatText(`${name}!`, true);
+      }
       break;
     }
   }

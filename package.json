@@ -43,15 +43,35 @@
         "command": "frogPet.showPond",
         "title": "Show Pond",
         "category": "Frog"
+      },
+      {
+        "command": "frogPet.resetProgress",
+        "title": "Reset Progress",
+        "category": "Frog"
+      },
+      {
+        "command": "frogPet.debugAddXp",
+        "title": "Debug \u2014 Add 10 XP",
+        "category": "Frog"
       }
-    ]
+    ],
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "frogPet.debugAddXp",
+          "when": "frogPet.devMode"
+        }
+      ]
+    }
   },
   "scripts": {
     "build": "node esbuild.mjs",
     "watch": "node esbuild.mjs --watch",
     "typecheck": "tsc -p . && tsc -p src/webview",
     "vscode:prepublish": "npm run typecheck && node esbuild.mjs --production",
-    "package": "vsce package"
+    "package": "vsce package",
+    "pretest": "esbuild test/*.test.ts --bundle --platform=node --outdir=out-test --log-level=warning",
+    "test": "node --test out-test/"
   },
   "devDependencies": {
     "@types/node": "^20.19.43",

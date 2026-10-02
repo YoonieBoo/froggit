@@ -76,6 +76,12 @@ export class PondViewProvider implements vscode.WebviewViewProvider {
 </head>
 <body>
   <canvas id="pond" aria-label="A pixel-art frog in a pond"></canvas>
+  <div id="hud" hidden>
+    <span id="stage-name"></span>
+    <div class="xp-bar"><div id="xp-fill"></div></div>
+    <span id="xp-text"></span>
+  </div>
+  <div id="floaters"></div>
   <script nonce="${nonce}" src="${scriptUri}"></script>
 </body>
 </html>`;
