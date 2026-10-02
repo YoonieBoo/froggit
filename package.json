@@ -2,9 +2,17 @@
   "name": "froggit",
   "displayName": "Froggit",
   "description": "Froggit: a cozy pixel-art frog that lives in your editor and eats your bugs as you fix them.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "publisher": "yoonie-studio",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/YoonieBoo/froggit.git"
+  },
+  "bugs": {
+    "url": "https://github.com/YoonieBoo/froggit/issues"
+  },
+  "homepage": "https://github.com/YoonieBoo/froggit#readme",
   "icon": "media/icon.png",
   "galleryBanner": {
     "color": "#2f5d3a",
@@ -89,7 +97,7 @@
     "watch": "node esbuild.mjs --watch",
     "typecheck": "tsc -p . && tsc -p src/webview",
     "vscode:prepublish": "npm run typecheck && node esbuild.mjs --production",
-    "package": "vsce package --allow-missing-repository",
+    "package": "vsce package",
     "pretest": "esbuild test/*.test.ts --bundle --platform=node --outdir=out-test --log-level=warning",
     "test": "node --test out-test/",
     "demo-gif": "esbuild scripts/make-demo-gif.ts --bundle --platform=node --log-level=warning | node"
