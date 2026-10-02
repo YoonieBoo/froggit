@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { randomBytes } from 'crypto';
+import { isWebviewMessage, type HostMessage } from '../shared/protocol';
 
 /**
  * Hosts the pond webview in the Explorer sidebar.
@@ -10,7 +11,14 @@ export class PondViewProvider implements vscode.WebviewViewProvider {
 
   private view?: vscode.WebviewView;
 
-  constructor(private readonly extensionUri: vscode.Uri) {}
+  /**
+   * @param getSnapshot Builds the full current state. Sent whenever the webview
+   *   (re)loads, because a hidden webview is destroyed and misses events.
+   */
+  constructor(
+    private readonly extensionUri: vscode.Uri,
+    private readonly getSnapshot: () => HostMessage,
+  ) {}
 
   resolveWebviewView(webviewView: vscode.WebviewView): void {
     this.view = webviewView;
@@ -26,9 +34,19 @@ export class PondViewProvider implements vscode.WebviewViewProvider {
     };
     webview.html = this.getHtml(webview);
 
+    webview.onDidReceiveMessage((message: unknown) => {
+      if (!isWebviewMessage(message)) return;
+      if (message.type === 'ready') this.post(this.getSnapshot());
+    });
+
     webviewView.onDidDispose(() => {
       this.view = undefined;
     });
+  }
+
+  /** Sends a message if the pond is open. Dropped otherwise; the next snapshot catches up. */
+  post(message: HostMessage): void {
+    void this.view?.webview.postMessage(message);
   }
 
   private getHtml(webview: vscode.Webview): string {
