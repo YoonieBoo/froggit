@@ -1,3 +1,4 @@
+import { motion } from './motion';
 import type { Particles } from './Particles';
 import { makeSprite, type Screen } from './renderer';
 import { EGG, EGG_CRACKED } from './sprites/egg';
@@ -58,7 +59,7 @@ export class Egg {
     this.wobbleLeft = Math.max(0, this.wobbleLeft - dt);
     this.nextWobbleIn -= dt;
     if (this.nextWobbleIn <= 0) {
-      this.wobble();
+      if (!motion.reduced) this.wobble();
       this.nextWobbleIn = 4 + Math.random() * 5;
     }
   }

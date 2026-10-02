@@ -1,0 +1,9 @@
+/* Playground: VS Code's built-in CSS checker reports empty rules as WARNINGS.
+   Each one becomes a small yellow gnat in the pond.
+   Add a property (e.g. color: green;) to fix one. */
+
+.empty-one {
+}
+
+.empty-two {
+}

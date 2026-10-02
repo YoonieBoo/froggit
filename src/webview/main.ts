@@ -4,6 +4,7 @@ import { Bugs } from './Bugs';
 import { Egg } from './Egg';
 import { Frog } from './Frog';
 import { Hud } from './Hud';
+import { setReducedMotionSetting } from './motion';
 import { Particles } from './Particles';
 import { Pond } from './Pond';
 import { Screen } from './renderer';
@@ -83,7 +84,12 @@ function floatText(message: string, big = false): void {
 
 function handleMessage(message: HostMessage): void {
   switch (message.type) {
+    case 'settings':
+      setReducedMotionSetting(message.settings.reducedMotion);
+      break;
+
     case 'snapshot':
+      setReducedMotionSetting(message.settings.reducedMotion);
       stage = message.progress.stage;
       hud.show(message.progress);
       bugs.setCounts(message.bugs);

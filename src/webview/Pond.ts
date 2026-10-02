@@ -1,3 +1,4 @@
+import { motion } from './motion';
 import type { Screen } from './renderer';
 
 // Scene colors. These are separate from the sprite palette because the
@@ -142,6 +143,7 @@ export class Pond {
     if (!this.background) return;
     const ctx = screen.ctx;
     ctx.drawImage(this.background, 0, 0);
+    if (motion.reduced) return;
 
     ctx.fillStyle = C.shimmer;
     for (const s of this.shimmers) {

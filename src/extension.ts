@@ -5,6 +5,13 @@ import { PondViewProvider } from './host/PondViewProvider';
 import { Progression } from './host/Progression';
 import { PROGRESS_KEY, ProgressStore } from './host/ProgressStore';
 import type { XpEvent } from './host/XpEngine';
+import type { HostMessage, PondSettings } from './shared/protocol';
+
+function readSettings(): PondSettings {
+  return {
+    reducedMotion: vscode.workspace.getConfiguration('frogPet').get<boolean>('reducedMotion', false),
+  };
+}
 
 export function activate(context: vscode.ExtensionContext): void {
   // Let Settings Sync carry the frog to other machines.
@@ -13,11 +20,13 @@ export function activate(context: vscode.ExtensionContext): void {
   const bugs = new BugTracker();
   const activity = new ActivityTracker();
 
-  const pond = new PondViewProvider(context.extensionUri, () => ({
+  const snapshot = (): HostMessage => ({
     type: 'snapshot',
     bugs: bugs.bugCounts,
     progress: progression.view,
-  }));
+    settings: readSettings(),
+  });
+  const pond = new PondViewProvider(context.extensionUri, snapshot);
 
   const progression = new Progression(new ProgressStore(context.globalState), (update) =>
     pond.post({ type: 'progress', ...update }),
@@ -40,7 +49,7 @@ export function activate(context: vscode.ExtensionContext): void {
       );
       if (choice !== 'Reset') return;
       await progression.reset();
-      pond.post({ type: 'snapshot', bugs: bugs.bugCounts, progress: progression.view });
+      pond.post(snapshot());
     }),
 
     bugs.onDidUpdate((update) => {
@@ -64,6 +73,12 @@ export function activate(context: vscode.ExtensionContext): void {
     }),
 
     activity.onActivity((event) => progression.award([event])),
+
+    vscode.workspace.onDidChangeConfiguration((e) => {
+      if (e.affectsConfiguration('frogPet.reducedMotion')) {
+        pond.post({ type: 'settings', settings: readSettings() });
+      }
+    }),
   );
 
   // Testing shortcuts, only when launched with F5. The context key hides them

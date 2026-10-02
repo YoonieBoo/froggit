@@ -1,3 +1,4 @@
+import { motion } from './motion';
 import type { Screen } from './renderer';
 
 interface Particle {
@@ -18,6 +19,7 @@ export class Particles {
   private list: Particle[] = [];
 
   burst(x: number, y: number, count: number, colors: readonly string[], speed = 30): void {
+    if (motion.reduced) return;
     for (let i = 0; i < count; i++) {
       const angle = -Math.PI / 2 + (Math.random() - 0.5) * Math.PI * 0.9;
       const v = speed * (0.5 + Math.random() * 0.7);

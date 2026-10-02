@@ -32,6 +32,8 @@ export class BugTracker implements vscode.Disposable {
   readonly onDidUpdate = this.emitter.event;
   private readonly disposables: vscode.Disposable[] = [];
 
+  private countWarnings = readCountWarnings();
+
   constructor() {
     this.disposables.push(
       this.emitter,
@@ -39,6 +41,9 @@ export class BugTracker implements vscode.Disposable {
       vscode.workspace.onDidCloseTextDocument((doc) =>
         this.recentlyClosed.set(doc.uri.toString(), Date.now()),
       ),
+      vscode.workspace.onDidChangeConfiguration((e) => {
+        if (e.affectsConfiguration('frogPet.countWarnings')) this.onCountWarningsChanged();
+      }),
     );
     // Problems that already exist at startup are not "new" and not "fixed".
     this.scan(false);
@@ -51,6 +56,14 @@ export class BugTracker implements vscode.Disposable {
   dispose(): void {
     clearTimeout(this.timer);
     this.disposables.forEach((d) => d.dispose());
+  }
+
+  /** Turning warnings off must not look like fixing them all, so rescan from scratch quietly. */
+  private onCountWarningsChanged(): void {
+    this.countWarnings = readCountWarnings();
+    this.tracked = new Map();
+    this.scan(false);
+    this.emitter.fire({ counts: this.bugCounts, fixed: [], added: 0, cleared: 0 });
   }
 
   private schedule(): void {
@@ -94,7 +107,7 @@ export class BugTracker implements vscode.Disposable {
 
       for (const d of diagnostics) {
         const severity = toSeverity(d.severity);
-        if (!severity) continue;
+        if (!severity || (severity === 'warning' && !this.countWarnings)) continue;
         const code = typeof d.code === 'object' ? String(d.code.value) : String(d.code ?? '');
         result.push({
           uri: uriString,
@@ -105,6 +118,10 @@ export class BugTracker implements vscode.Disposable {
     }
     return result;
   }
+}
+
+function readCountWarnings(): boolean {
+  return vscode.workspace.getConfiguration('frogPet').get<boolean>('countWarnings', true);
 }
 
 function toSeverity(severity: vscode.DiagnosticSeverity): Severity | undefined {

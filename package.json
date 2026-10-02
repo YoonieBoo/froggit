@@ -62,6 +62,21 @@
           "when": "frogPet.devMode"
         }
       ]
+    },
+    "configuration": {
+      "title": "Bug-Eating Frog",
+      "properties": {
+        "frogPet.countWarnings": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show warnings as small gnats in the pond and award XP for fixing them. Turn off if a linter reports many warnings you don't plan to fix."
+        },
+        "frogPet.reducedMotion": {
+          "type": "boolean",
+          "default": false,
+          "description": "Calmer pond: the frog stays put unless it's eating, with no confetti or water shimmer. Also turns on automatically when your operating system's 'reduce motion' setting is on."
+        }
+      }
     }
   },
   "scripts": {

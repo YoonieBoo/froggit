@@ -9,9 +9,15 @@ export interface BugCounts {
   warnings: number;
 }
 
+/** User settings the pond needs to know about. */
+export interface PondSettings {
+  reducedMotion: boolean;
+}
+
 /** Host → webview */
 export type HostMessage =
-  | { type: 'snapshot'; bugs: BugCounts; progress: ProgressView }
+  | { type: 'snapshot'; bugs: BugCounts; progress: ProgressView; settings: PondSettings }
+  | { type: 'settings'; settings: PondSettings }
   | { type: 'bugsChanged'; bugs: BugCounts; fixed: number; added: number }
   | { type: 'progress'; progress: ProgressView; gained: number; stageUp: boolean };
 

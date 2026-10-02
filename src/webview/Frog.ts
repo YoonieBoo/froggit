@@ -1,5 +1,6 @@
 import { AnimationPlayer, type Animation } from './animation';
 import type { Prey } from './Bugs';
+import { motion } from './motion';
 import { CONFETTI, type Particles } from './Particles';
 import { makeSprite, type Screen } from './renderer';
 import {
@@ -315,7 +316,7 @@ export class Frog {
 
   private updateCelebration(): void {
     const bounce = Math.floor(this.stateTime / BOUNCE_TIME);
-    if (bounce >= CELEBRATE_BOUNCES) {
+    if (bounce >= (motion.reduced ? 1 : CELEBRATE_BOUNCES)) {
       this.lift = 0;
       if (!this.startNextTask()) this.enter('idle');
       return;
@@ -348,7 +349,7 @@ export class Frog {
     this.nextActionIn = randomBetween(3, 8);
     const roll = Math.random();
 
-    if (roll < 0.55) {
+    if (roll < 0.55 && !motion.reduced) {
       // Wander to a spot at least a hop away.
       const span = this.sceneWidth - this.width - EDGE_MARGIN * 2;
       let x = EDGE_MARGIN + Math.random() * span;

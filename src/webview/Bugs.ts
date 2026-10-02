@@ -1,5 +1,6 @@
 import { visibleBeetles, visibleGnats } from '../shared/bugMapping';
 import type { BugCounts } from '../shared/protocol';
+import { motion } from './motion';
 import { makeSprite, type Screen, type Sprite } from './renderer';
 import { BEETLE_0, BEETLE_1, GNAT_0, GNAT_1 } from './sprites/bug';
 
@@ -113,9 +114,10 @@ export class Bugs {
     bug.t += dt;
     if (bug.caught) return; // the frog's tongue is moving it
 
-    // Gentle figure-of-eight hover around the base position.
-    const wobbleX = Math.sin(bug.t * 1.3 + bug.phase) * 3;
-    const wobbleY = Math.sin(bug.t * 2.1 + bug.phase) * 2;
+    // Gentle figure-of-eight hover around the base position (smaller with reduced motion).
+    const amount = motion.reduced ? 0.3 : 1;
+    const wobbleX = Math.sin(bug.t * 1.3 + bug.phase) * 3 * amount;
+    const wobbleY = Math.sin(bug.t * 2.1 + bug.phase) * 2 * amount;
 
     switch (bug.state) {
       case 'arriving': {
