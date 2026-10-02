@@ -2,9 +2,14 @@
   "name": "bug-eating-frog",
   "displayName": "Bug-Eating Frog",
   "description": "A cozy pixel-art frog that lives in your editor and eats your bugs as you fix them.",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "publisher": "your-publisher-id",
   "license": "MIT",
+  "icon": "media/icon.png",
+  "galleryBanner": {
+    "color": "#2f5d3a",
+    "theme": "dark"
+  },
   "engines": {
     "vscode": "^1.90.0"
   },
@@ -84,7 +89,7 @@
     "watch": "node esbuild.mjs --watch",
     "typecheck": "tsc -p . && tsc -p src/webview",
     "vscode:prepublish": "npm run typecheck && node esbuild.mjs --production",
-    "package": "vsce package",
+    "package": "vsce package --allow-missing-repository",
     "pretest": "esbuild test/*.test.ts --bundle --platform=node --outdir=out-test --log-level=warning",
     "test": "node --test out-test/"
   },
