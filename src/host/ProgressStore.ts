@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { migrateProgress, type ProgressState } from './progressState';
 
-export const PROGRESS_KEY = 'frogPet.progress';
+export const PROGRESS_KEY = 'froggit.progress';
 
 /**
  * Saves progress in VS Code's global storage, so the same frog follows you

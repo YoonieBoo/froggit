@@ -9,7 +9,7 @@ import type { HostMessage, PondSettings } from './shared/protocol';
 
 function readSettings(): PondSettings {
   return {
-    reducedMotion: vscode.workspace.getConfiguration('frogPet').get<boolean>('reducedMotion', false),
+    reducedMotion: vscode.workspace.getConfiguration('froggit').get<boolean>('reducedMotion', false),
   };
 }
 
@@ -37,11 +37,11 @@ export function activate(context: vscode.ExtensionContext): void {
     activity,
     vscode.window.registerWebviewViewProvider(PondViewProvider.viewId, pond),
 
-    vscode.commands.registerCommand('frogPet.showPond', () =>
+    vscode.commands.registerCommand('froggit.showPond', () =>
       vscode.commands.executeCommand(`${PondViewProvider.viewId}.focus`),
     ),
 
-    vscode.commands.registerCommand('frogPet.resetProgress', async () => {
+    vscode.commands.registerCommand('froggit.resetProgress', async () => {
       const choice = await vscode.window.showWarningMessage(
         'Reset your frog back to an egg? All XP will be lost.',
         { modal: true },
@@ -75,7 +75,7 @@ export function activate(context: vscode.ExtensionContext): void {
     activity.onActivity((event) => progression.award([event])),
 
     vscode.workspace.onDidChangeConfiguration((e) => {
-      if (e.affectsConfiguration('frogPet.reducedMotion')) {
+      if (e.affectsConfiguration('froggit.reducedMotion')) {
         pond.post({ type: 'settings', settings: readSettings() });
       }
     }),
@@ -84,9 +84,9 @@ export function activate(context: vscode.ExtensionContext): void {
   // Testing shortcuts, only when launched with F5. The context key hides them
   // from the Command Palette in the published extension.
   if (context.extensionMode === vscode.ExtensionMode.Development) {
-    void vscode.commands.executeCommand('setContext', 'frogPet.devMode', true);
+    void vscode.commands.executeCommand('setContext', 'froggit.devMode', true);
     context.subscriptions.push(
-      vscode.commands.registerCommand('frogPet.debugAddXp', () => progression.debugAddXp(10)),
+      vscode.commands.registerCommand('froggit.debugAddXp', () => progression.debugAddXp(10)),
     );
   }
 }

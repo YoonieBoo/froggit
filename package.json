@@ -1,7 +1,7 @@
 {
-  "name": "bug-eating-frog",
-  "displayName": "Bug-Eating Frog",
-  "description": "A cozy pixel-art frog that lives in your editor and eats your bugs as you fix them.",
+  "name": "froggit",
+  "displayName": "Froggit",
+  "description": "Froggit: a cozy pixel-art frog that lives in your editor and eats your bugs as you fix them.",
   "version": "0.1.0",
   "publisher": "yoonie-studio",
   "license": "MIT",
@@ -38,45 +38,45 @@
       "explorer": [
         {
           "type": "webview",
-          "id": "frogPet.pond",
+          "id": "froggit.pond",
           "name": "Frog Pond"
         }
       ]
     },
     "commands": [
       {
-        "command": "frogPet.showPond",
+        "command": "froggit.showPond",
         "title": "Show Pond",
-        "category": "Frog"
+        "category": "Froggit"
       },
       {
-        "command": "frogPet.resetProgress",
+        "command": "froggit.resetProgress",
         "title": "Reset Progress",
-        "category": "Frog"
+        "category": "Froggit"
       },
       {
-        "command": "frogPet.debugAddXp",
+        "command": "froggit.debugAddXp",
         "title": "Debug \u2014 Add 10 XP",
-        "category": "Frog"
+        "category": "Froggit"
       }
     ],
     "menus": {
       "commandPalette": [
         {
-          "command": "frogPet.debugAddXp",
-          "when": "frogPet.devMode"
+          "command": "froggit.debugAddXp",
+          "when": "froggit.devMode"
         }
       ]
     },
     "configuration": {
-      "title": "Bug-Eating Frog",
+      "title": "Froggit",
       "properties": {
-        "frogPet.countWarnings": {
+        "froggit.countWarnings": {
           "type": "boolean",
           "default": true,
           "description": "Show warnings as small gnats in the pond and award XP for fixing them. Turn off if a linter reports many warnings you don't plan to fix."
         },
-        "frogPet.reducedMotion": {
+        "froggit.reducedMotion": {
           "type": "boolean",
           "default": false,
           "description": "Calmer pond: the frog stays put unless it's eating, with no confetti or water shimmer. Also turns on automatically when your operating system's 'reduce motion' setting is on."

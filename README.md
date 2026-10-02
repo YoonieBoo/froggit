@@ -1,4 +1,4 @@
-# Bug-Eating Frog 🐸
+# Froggit 🐸
 
 A cozy pixel-art frog that lives in your VS Code sidebar and **eats your bugs as you fix them**.
 
@@ -46,20 +46,20 @@ Settings Sync, it follows you to other machines too.
 ## Getting started
 
 1. Install the extension.
-2. Open the **Explorer** sidebar and expand **Frog Pond** (or run **Frog: Show Pond**).
+2. Open the **Explorer** sidebar and expand **Frog Pond** (or run **Froggit: Show Pond**).
 3. Code as usual. You can drag the pond to the bottom panel if you prefer a wider view.
 
 ## Settings
 
 | Setting | Default | Description |
 | --- | --- | --- |
-| `frogPet.countWarnings` | `true` | Show warnings as gnats and award XP for fixing them. Turn off if a linter reports many warnings you don't plan to fix. |
-| `frogPet.reducedMotion` | `false` | Calmer pond: the frog stays put unless it's eating, with no confetti or water shimmer. Also turns on automatically when your OS "reduce motion" setting is on. |
+| `froggit.countWarnings` | `true` | Show warnings as gnats and award XP for fixing them. Turn off if a linter reports many warnings you don't plan to fix. |
+| `froggit.reducedMotion` | `false` | Calmer pond: the frog stays put unless it's eating, with no confetti or water shimmer. Also turns on automatically when your OS "reduce motion" setting is on. |
 
 ## Commands
 
-- **Frog: Show Pond** — open the pond.
-- **Frog: Reset Progress** — start over from an egg (asks for confirmation).
+- **Froggit: Show Pond** — open the pond.
+- **Froggit: Reset Progress** — start over from an egg (asks for confirmation).
 
 ## Privacy and safety
 
@@ -80,7 +80,7 @@ npm run package    # build a .vsix
 
 Press **F5** in VS Code to launch a development window with the `playground/` folder, which
 contains deliberate errors and warnings to test with. In development mode there is also a
-**Frog: Debug — Add 10 XP** command.
+**Froggit: Debug — Add 10 XP** command.
 
 All art is original and drawn in code (see `src/webview/sprites/`).
 

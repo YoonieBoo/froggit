@@ -42,7 +42,7 @@ export class BugTracker implements vscode.Disposable {
         this.recentlyClosed.set(doc.uri.toString(), Date.now()),
       ),
       vscode.workspace.onDidChangeConfiguration((e) => {
-        if (e.affectsConfiguration('frogPet.countWarnings')) this.onCountWarningsChanged();
+        if (e.affectsConfiguration('froggit.countWarnings')) this.onCountWarningsChanged();
       }),
     );
     // Problems that already exist at startup are not "new" and not "fixed".
@@ -121,7 +121,7 @@ export class BugTracker implements vscode.Disposable {
 }
 
 function readCountWarnings(): boolean {
-  return vscode.workspace.getConfiguration('frogPet').get<boolean>('countWarnings', true);
+  return vscode.workspace.getConfiguration('froggit').get<boolean>('countWarnings', true);
 }
 
 function toSeverity(severity: vscode.DiagnosticSeverity): Severity | undefined {

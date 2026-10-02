@@ -7,7 +7,7 @@ import { isWebviewMessage, type HostMessage } from '../shared/protocol';
  * The webview is presentation only; all game rules live in the extension host.
  */
 export class PondViewProvider implements vscode.WebviewViewProvider {
-  public static readonly viewId = 'frogPet.pond';
+  public static readonly viewId = 'froggit.pond';
 
   private view?: vscode.WebviewView;
 
