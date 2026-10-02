@@ -72,6 +72,24 @@ export const FROG_JUMP = [
   'kk..............',
 ];
 
+// Mouth wide open, for shooting the tongue.
+export const FROG_EAT = [
+  '.......kkk.kkkk.',
+  '......kwwbkwwwwk',
+  '......kwbbkwwbbk',
+  '.....kkgwkkwwbbk',
+  '....kgggggkkwwk.',
+  '...khhggggggggk.',
+  '..khggggggggggk.',
+  '..kgggggggggpgk.',
+  '.kGggggkkkkkkkkk',
+  'kGGggggkppppp...',
+  'kGGGgggkkkkkkk..',
+  'kGGGGgglllllk...',
+  '.kGGGkkglkkglk..',
+  '..kkk..kk..kkk..',
+];
+
 export const FROG_BLINK = [
   '................',
   '.......kkk.kkkk.',

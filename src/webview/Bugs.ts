@@ -6,11 +6,21 @@ import { BEETLE_0, BEETLE_1, GNAT_0, GNAT_1 } from './sprites/bug';
 type BugKind = 'beetle' | 'gnat';
 type BugState = 'arriving' | 'hovering' | 'leaving';
 
-interface Bug {
-  kind: BugKind;
-  state: BugState;
+/** What the frog needs to know about a bug it is hunting. */
+export interface Prey {
   x: number;
   y: number;
+  w: number;
+  h: number;
+  /** Set by the frog once the tongue has it; the bug then stops moving on its own. */
+  caught: boolean;
+}
+
+interface Bug extends Prey {
+  kind: BugKind;
+  state: BugState;
+  /** Promised to the frog: it stays put and no longer counts toward the visible total. */
+  doomed: boolean;
   homeX: number;
   homeY: number;
   fromX: number;
@@ -40,7 +50,7 @@ export class Bugs {
     gnat: [makeSprite(GNAT_0), makeSprite(GNAT_1)],
   };
 
-  /** Bugs hover in a band just above the frog, so its tongue can reach them later. */
+  /** Bugs hover in a band just above the frog, so its tongue can reach them. */
   setBounds(width: number, groundY: number): void {
     this.width = width;
     this.bottom = groundY - 10;
@@ -56,11 +66,29 @@ export class Bugs {
     this.target.gnat = visibleGnats(counts.warnings);
   }
 
+  /**
+   * Hands up to `count` bugs to the frog, nearest first. Call before setCounts():
+   * claimed bugs stop counting, so the swarm doesn't also send one flying away.
+   */
+  claim(count: number, nearX: number): Prey[] {
+    const claimed = this.list
+      .filter((b) => b.state !== 'leaving' && !b.doomed)
+      .sort((a, b) => Math.abs(a.x - nearX) - Math.abs(b.x - nearX))
+      .slice(0, count);
+    for (const bug of claimed) bug.doomed = true;
+    return claimed;
+  }
+
+  /** Called by the frog when a bug has been swallowed. */
+  remove(prey: Prey): void {
+    this.list = this.list.filter((b) => b !== prey);
+  }
+
   update(dt: number): void {
     this.spawnCooldown -= dt;
 
     for (const kind of ['beetle', 'gnat'] as const) {
-      const active = this.list.filter((b) => b.kind === kind && b.state !== 'leaving');
+      const active = this.list.filter((b) => b.kind === kind && b.state !== 'leaving' && !b.doomed);
       if (active.length > this.target[kind]) {
         this.leave(active[active.length - 1]);
       } else if (active.length < this.target[kind] && this.spawnCooldown <= 0) {
@@ -83,6 +111,8 @@ export class Bugs {
 
   private move(bug: Bug, dt: number): void {
     bug.t += dt;
+    if (bug.caught) return; // the frog's tongue is moving it
+
     // Gentle figure-of-eight hover around the base position.
     const wobbleX = Math.sin(bug.t * 1.3 + bug.phase) * 3;
     const wobbleY = Math.sin(bug.t * 2.1 + bug.phase) * 2;
@@ -110,13 +140,19 @@ export class Bugs {
   private spawn(kind: BugKind): void {
     const fromLeft = Math.random() < 0.5;
     const home = this.pickHome();
+    const sprite = this.sprites[kind][0];
+    const fromX = fromLeft ? -8 : this.width + 2;
     const fromY = this.top + Math.random() * (this.bottom - this.top);
     this.list.push({
       kind,
       state: 'arriving',
-      x: fromLeft ? -8 : this.width + 2,
+      doomed: false,
+      caught: false,
+      x: fromX,
       y: fromY,
-      fromX: fromLeft ? -8 : this.width + 2,
+      w: sprite.w,
+      h: sprite.h,
+      fromX,
       fromY,
       homeX: home.x,
       homeY: home.y,
