@@ -1,6 +1,11 @@
 # Froggit 🐸
 
+[![Marketplace](https://img.shields.io/visual-studio-marketplace/v/yoonie-studio.froggit?label=Marketplace&color=469a3c)](https://marketplace.visualstudio.com/items?itemName=yoonie-studio.froggit)
+[![Installs](https://img.shields.io/visual-studio-marketplace/i/yoonie-studio.froggit?color=469a3c)](https://marketplace.visualstudio.com/items?itemName=yoonie-studio.froggit)
+
 A cozy pixel-art frog that lives in your VS Code sidebar and **eats your bugs as you fix them**.
+
+![Froggit: an egg hatches, bugs fly in, and the frog eats each one as errors get fixed, then celebrates](images/demo.gif)
 
 When your code has errors, little beetles fly into the frog's pond. Fix an error and the frog
 hops over and snaps one up with its tongue. Get everything clean and it celebrates. Keep coding,
@@ -45,7 +50,7 @@ Settings Sync, it follows you to other machines too.
 
 ## Getting started
 
-1. Install the extension.
+1. Install **Froggit** from the [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=yoonie-studio.froggit), or search for "Froggit" in the Extensions view.
 2. Open the **Explorer** sidebar and expand **Frog Pond** (or run **Froggit: Show Pond**).
 3. Code as usual. You can drag the pond to the bottom panel if you prefer a wider view.
 
@@ -76,6 +81,7 @@ npm run build      # bundle extension + pond
 npm run typecheck  # type-check both
 npm test           # unit tests (XP rules, diagnostics diffing, bug mapping)
 npm run package    # build a .vsix
+npm run demo-gif   # re-render images/demo.gif from the sprites
 ```
 
 Press **F5** in VS Code to launch a development window with the `playground/` folder, which

@@ -91,7 +91,8 @@
     "vscode:prepublish": "npm run typecheck && node esbuild.mjs --production",
     "package": "vsce package --allow-missing-repository",
     "pretest": "esbuild test/*.test.ts --bundle --platform=node --outdir=out-test --log-level=warning",
-    "test": "node --test out-test/"
+    "test": "node --test out-test/",
+    "demo-gif": "esbuild scripts/make-demo-gif.ts --bundle --platform=node --log-level=warning | node"
   },
   "devDependencies": {
     "@types/node": "^20.19.43",
