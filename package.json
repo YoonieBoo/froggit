@@ -2,7 +2,7 @@
   "name": "froggit",
   "displayName": "Froggit",
   "description": "Froggit: a cozy pixel-art frog that lives in your editor and eats your bugs as you fix them.",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "publisher": "yoonie-studio",
   "license": "MIT",
   "repository": {
