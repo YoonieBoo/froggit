@@ -1,20 +1,27 @@
-// Renders images/demo.gif for the README: a scripted scene drawn with the real sprites.
-// The egg hatches, bugs fly in, the frog eats them all and celebrates.
+// Renders the README's two GIFs: scripted scenes drawn with the real sprites and
+// the real pond code.
+//   images/demo.gif       the basics: the egg hatches, the frog eats bugs, celebrates
+//   images/customize.gif  outfits, pond themes and decorations, and whispers
 // Run with: npm run demo-gif
 
+import './canvasShim'; // must come first: lets the pond code draw in Node
 import { mkdirSync, writeFileSync } from 'fs';
+import type { DecorationId, PondId } from '../src/shared/customization';
+import { Pond } from '../src/webview/Pond';
+import { FACE_ART, HAT_ART, headAnchor, type AccessoryArt } from '../src/webview/sprites/accessories';
 import { BEETLE_0, BEETLE_1, GNAT_0, GNAT_1 } from '../src/webview/sprites/bug';
 import { EGG, EGG_CRACKED } from '../src/webview/sprites/egg';
 import * as F from '../src/webview/sprites/frog';
 import { NOTICE_BUBBLE } from '../src/webview/sprites/fx';
 import { PALETTE } from '../src/webview/sprites/palette';
+import { WHISPER_TAIL, WHISPER_TAIL_NIGHT } from '../src/webview/sprites/ui';
+import type { PixelCanvas } from './canvasShim';
 
 const W = 128;
 const H = 64;
 const SCALE = 3;
 const DT = 0.08; // seconds per frame (12.5 fps)
 const DELAY_CS = 8; // the same, in GIF centiseconds
-const OUT = 'images/demo.gif';
 
 // ── Pixel buffer with an automatically built palette ──────────────────────
 
@@ -48,75 +55,87 @@ function sprite(buf: Uint8Array, rows: string[], x: number, y: number, flip = fa
     }
   });
 }
+// ── Pond (the real one, drawn through the canvas stand-in) ────────────────
 
-// ── Background (same layout rules as src/webview/Pond.ts) ─────────────────
-
-const C = {
-  skyTop: '#a9dccd', skyLow: '#c6e8cf', bush: '#4f8f5a', bushDark: '#3f7a4b',
-  cattail: '#6b4a2e', reed: '#5a8f3e', water: '#3f8fa3', waterDark: '#357a8e',
-  pad: '#4fa64a', padDark: '#3b8a3c', grassTop: '#7cbf55', grass: '#5f9e46',
-  grassDark: '#4a8538', stone: '#9aa0a6', stoneDark: '#7b8188',
-  flowerYellow: '#f2d75a', flowerPink: '#f29ab0',
-};
-
-function seededRandom(seed: number): () => number {
-  return () => {
-    seed = (seed + 0x6d2b79f5) | 0;
-    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
+function makePond(theme: PondId, decorations: DecorationId[]): Pond {
+  const pond = new Pond();
+  pond.setLook(theme, decorations);
+  pond.build(W, H);
+  return pond;
 }
 
-const groundY = H - Math.max(8, Math.round(H * 0.22));
-const waterTop = Math.round(H * 0.45);
-const background = new Uint8Array(W * H);
-{
-  const b = background;
-  const rand = seededRandom(1337);
-  rect(b, C.skyTop, 0, 0, W, H);
-  rect(b, C.skyLow, 0, Math.round(waterTop * 0.55), W, waterTop);
-  for (let x = 0; x < W; x += 3) {
-    const bump = 2 + Math.floor(rand() * 3);
-    rect(b, C.bush, x, waterTop - bump, 3, bump);
-    rect(b, C.bushDark, x, waterTop - 1, 3, 1);
+function pondPixels(pond: Pond, t: number): Uint8Array {
+  const canvas = document.createElement('canvas') as unknown as PixelCanvas;
+  canvas.width = W;
+  canvas.height = H;
+  pond.draw(canvas.getContext() as unknown as CanvasRenderingContext2D, t);
+  const buf = new Uint8Array(W * H);
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) buf[y * W + x] = idx(canvas.get(x, y) ?? '#000000');
+  return buf;
+}
+
+let pond = makePond('classic', []);
+let nextPond: Pond | null = null;
+let wipe = 0; // 0..1 while sliding to nextPond
+let night = false;
+const groundY = pond.groundY;
+
+// ── Whisper bubble, with a tiny pixel font ────────────────────────────────
+// The real bubble uses VS Code's font, which can't be drawn at this pixel size,
+// so the demo spells its messages with this font. Row 0 is for ascenders,
+// rows 1-4 are the body of the letter, row 5 is for descenders.
+
+const GLYPHS: Record<string, string[]> = {
+  ' ': ['..', '..', '..', '..', '..', '..'],
+  '!': ['x', 'x', 'x', '.', 'x', '.'],
+  '♡': ['.....', '.x.x.', 'x.x.x', 'x...x', '.x.x.', '..x..'],
+  b: ['x..', 'x..', 'xx.', 'x.x', 'xx.', '...'],
+  c: ['...', '.xx', 'x..', 'x..', '.xx', '...'],
+  e: ['...', '.x.', 'xxx', 'x..', '.xx', '...'],
+  g: ['...', '.xx', 'x.x', '.xx', '..x', 'xx.'],
+  h: ['x..', 'x..', 'xx.', 'x.x', 'x.x', '...'],
+  i: ['x', '.', 'x', 'x', 'x', '.'],
+  k: ['x..', 'x..', 'x.x', 'xx.', 'x.x', '...'],
+  n: ['...', 'xx.', 'x.x', 'x.x', 'x.x', '...'],
+  o: ['...', '.x.', 'x.x', 'x.x', '.x.', '...'],
+  r: ['...', 'x.x', 'xx.', 'x..', 'x..', '...'],
+  s: ['...', '.xx', 'x..', '..x', 'xx.', '...'],
+  t: ['.x.', 'xxx', '.x.', '.x.', '..x', '...'],
+  u: ['...', 'x.x', 'x.x', 'x.x', '.xx', '...'],
+  w: ['.....', 'x...x', 'x...x', 'x.x.x', '.x.x.', '.....'],
+  y: ['...', 'x.x', 'x.x', '.xx', '..x', 'xx.'],
+};
+
+const textWidth = (text: string) =>
+  [...text].reduce((w, ch) => w + GLYPHS[ch][0].length, 0) + text.length - 1;
+
+let whisper: { text: string } | null = null;
+
+function drawWhisper(buf: Uint8Array, centerX: number, topY: number): void {
+  if (!whisper) return;
+  const fill = night ? '#26315f' : '#fffaf0';
+  const line = night ? '#c9d3f5' : '#1f3a24';
+  const ink = night ? '#f1f5ff' : '#1f3a24';
+  const w = textWidth(whisper.text) + 6;
+  const h = 9;
+  const tipY = Math.round(topY) - 2;
+  const top = Math.max(1, tipY - 2 - h - 1);
+  const left = Math.min(W - w - 2, Math.max(1, Math.round(centerX - w / 2)));
+  // Box with notched corners: the outline skips the four corner pixels.
+  rect(buf, fill, left, top, w, h);
+  rect(buf, line, left, top - 1, w, 1);
+  rect(buf, line, left, top + h, w, 1);
+  rect(buf, line, left - 1, top, 1, h);
+  rect(buf, line, left + w, top, 1, h);
+  let x = left + 3;
+  for (const ch of whisper.text) {
+    GLYPHS[ch].forEach((row, ry) => {
+      for (let rx = 0; rx < row.length; rx++) if (row[rx] === 'x') rect(buf, ink, x + rx, top + 2 + ry);
+    });
+    x += GLYPHS[ch][0].length + 1;
   }
-  for (let i = 0; i < Math.max(2, Math.floor(W / 30)); i++) {
-    const x = Math.floor(rand() * W);
-    const tall = 6 + Math.floor(rand() * 5);
-    rect(b, C.reed, x, waterTop - tall, 1, tall);
-    rect(b, C.cattail, x, waterTop - tall + 1, 1, 3);
-  }
-  rect(b, C.water, 0, waterTop, W, groundY - waterTop);
-  for (let y = waterTop + 3; y < groundY; y += 4) rect(b, C.waterDark, 0, y, W, 1);
-  const padCount = Math.max(2, Math.floor(W / 40));
-  for (let i = 0; i < padCount; i++) {
-    const x = Math.floor(((i + 0.2 + rand() * 0.6) / padCount) * W) - 4;
-    const y = waterTop + 2 + Math.floor(rand() * Math.max(1, groundY - waterTop - 6));
-    const small = rand() < 0.4;
-    const rows = small ? [[1, 4], [0, 6], [1, 4]] : [[2, 5], [0, 9], [0, 9], [2, 5]];
-    rows.forEach(([o, w], r) => rect(b, C.pad, x + o, y + r, w, 1));
-    rect(b, C.water, x + (small ? 4 : 6), y + 1, small ? 2 : 3, 1);
-    const last = rows[rows.length - 1];
-    rect(b, C.padDark, x + last[0], y + rows.length - 1, last[1], 1);
-  }
-  rect(b, C.grass, 0, groundY, W, H - groundY);
-  rect(b, C.grassTop, 0, groundY, W, 1);
-  for (let y = groundY + 3; y < H; y += 3) {
-    for (let x = Math.floor(rand() * 4); x < W; x += 4 + Math.floor(rand() * 5)) rect(b, C.grassDark, x, y);
-  }
-  for (let x = 1; x < W; x += 2 + Math.floor(rand() * 6)) {
-    const tall = 1 + Math.floor(rand() * 3);
-    rect(b, C.grassTop, x, groundY - tall, 1, tall);
-    if (rand() < 0.12) rect(b, rand() < 0.5 ? C.flowerYellow : C.flowerPink, x, groundY - tall - 1);
-  }
-  for (let i = 0; i < Math.max(1, Math.floor(W / 60)); i++) {
-    const x = Math.floor(rand() * (W - 5));
-    const y = groundY + 2 + Math.floor(rand() * Math.max(1, H - groundY - 4));
-    rect(b, C.stone, x + 1, y, 3, 1);
-    rect(b, C.stone, x, y + 1, 5, 1);
-    rect(b, C.stoneDark, x, y + 2, 5, 1);
-  }
+  const tailX = Math.min(left + w - 6, Math.max(left + 1, Math.round(centerX) - 2));
+  sprite(buf, night ? WHISPER_TAIL_NIGHT : WHISPER_TAIL, tailX, top + h);
 }
 
 // ── Scene state ───────────────────────────────────────────────────────────
@@ -131,6 +150,8 @@ const frog = {
   pose: 'idle' as Pose,
   bubble: false,
   tongue: null as { x: number; y: number } | null,
+  hat: null as AccessoryArt | null,
+  face: null as AccessoryArt | null,
 };
 const egg = { x: Math.floor((W - 10) / 2), y: groundY - 11, wobble: false, hatchT: -1 };
 let actor: 'egg' | 'frog' = 'egg';
@@ -153,13 +174,17 @@ interface Bug {
 }
 const bugs: Bug[] = [];
 
-function spawn(frames: string[][], homeX: number, homeY: number, fromLeft: boolean, delay: number): void {
+function makeBug(frames: string[][], homeX: number, homeY: number, fromLeft = false, delay = 0): Bug {
   const fromX = fromLeft ? -8 : W + 2;
-  bugs.push({
+  return {
     frames, w: frames[0][0].length, h: frames[0].length,
     x: fromX, y: homeY, homeX, homeY, fromX, fromY: homeY - 6,
     t: -delay, phase: Math.random() * 6, caught: false, gone: false,
-  });
+  };
+}
+
+function spawn(frames: string[][], homeX: number, homeY: number, fromLeft: boolean, delay: number): void {
+  bugs.push(makeBug(frames, homeX, homeY, fromLeft, delay));
 }
 
 function updateBugs(): void {
@@ -200,7 +225,6 @@ function updateParticles(): void {
     if (p.life <= 0) particles.splice(i, 1);
   }
 }
-
 // ── Script (one yield = one frame) ────────────────────────────────────────
 
 const clampX = (x: number) => Math.min(W - 16 - 2, Math.max(2, x));
@@ -310,7 +334,33 @@ function* celebrate() {
   frog.pose = 'idle';
 }
 
-function* script() {
+/** A sparkle around the head, and the frog is wearing something new. */
+function* poof(hat: AccessoryArt | null, face: AccessoryArt | null) {
+  burst(frog.x + 8, frog.y - 2, 14, ['#ffffff', '#fff3b0', '#f5c542'], 25);
+  yield* wait(0.08);
+  frog.hat = hat;
+  frog.face = face;
+  yield* happy();
+}
+
+/** Slides the next pond in from the left. */
+function* wipeTo(theme: PondId, decorations: DecorationId[]) {
+  nextPond = makePond(theme, decorations);
+  yield* during(0.9, (p) => (wipe = p));
+  pond = nextPond;
+  nextPond = null;
+  wipe = 0;
+  night = theme === 'moonlight';
+}
+
+function* say(text: string, seconds: number) {
+  whisper = { text };
+  yield* wait(seconds);
+  whisper = null;
+}
+
+/** The basics: hatch, a swarm of bugs, a clean workspace. */
+function* basics() {
   // Egg wobbles, then hatches.
   yield* wait(0.6);
   egg.wobble = true;
@@ -352,10 +402,67 @@ function* script() {
   yield* wait(1.0);
 }
 
+/** New in 0.2: outfits, ponds and decorations, and whispers. */
+function* customize() {
+  actor = 'frog';
+  frog.x = clampX(Math.floor((W - 16) / 2));
+  yield* wait(0.6);
+  yield* blink();
+  yield* wait(0.3);
+
+
+  // Trying on outfits.
+  yield* poof(HAT_ART.wizard, FACE_ART['round-glasses']);
+  yield* wait(0.3);
+  yield* poof(HAT_ART.crown, FACE_ART.sunglasses);
+  yield* wait(0.3);
+
+  // Moonlight, with a lantern and a lily: a short hop and a whisper.
+  yield* wipeTo('moonlight', ['lantern', 'lily-flower']);
+  // The bubble stays up while the frog hops, following it.
+  whisper = { text: 'you got this ♡' };
+  yield* wait(0.6);
+  yield* hopTo(frog.x - 10);
+  yield* wait(1.0);
+  whisper = null;
+
+  // Sakura: one more bug close by, and a little cheer after.
+  yield* wipeTo('sakura', ['flowers', 'rocks']);
+  const bug = bugs[bugs.push(makeBug([BEETLE_0, BEETLE_1], clampX(frog.x + 22), groundY - 20)) - 1];
+  yield* wait(1.2);
+  yield* notice();
+  yield* approach(bug);
+  yield* eat(bug);
+  yield* happy();
+  yield* say('ribbit! nice work', 1.8);
+
+  // Autumn, with mushrooms, in a different outfit.
+  yield* wipeTo('autumn', ['mushrooms', 'flowers']);
+  yield* poof(HAT_ART.cap, FACE_ART['round-glasses']);
+  yield* blink();
+  yield* wait(1.0);
+}
+
 // ── Render ────────────────────────────────────────────────────────────────
 
+/** Pins an accessory to the head of the current frame, mirrored with the frog. */
+function drawAccessory(buf: Uint8Array, art: AccessoryArt, frame: string[]): void {
+  const head = headAnchor(frame);
+  const left = head.x + art.dx;
+  const flip = frog.facing === -1;
+  const x = flip ? frog.x + 16 - left - art.rows[0].length : frog.x + left;
+  sprite(buf, art.rows, x, frog.y - frog.lift + head.y + art.dy, flip);
+}
+
 function render(): Uint8Array {
-  const buf = background.slice();
+  const buf = pondPixels(pond, time);
+  if (nextPond) {
+    // Wipe: the next pond slides in from the left behind a moving edge.
+    const next = pondPixels(nextPond, time);
+    const edge = Math.round(wipe * W);
+    for (let y = 0; y < H; y++) buf.set(next.subarray(y * W, y * W + edge), y * W);
+    rect(buf, '#fffaf0', edge, 0, 1, H);
+  }
   if (actor === 'egg') {
     const hatching = egg.hatchT >= 0;
     const shaking = egg.wobble || (hatching && egg.hatchT < 1.2);
@@ -370,7 +477,10 @@ function render(): Uint8Array {
       jump: F.FROG_JUMP,
       eat: F.FROG_EAT,
     };
-    sprite(buf, frames[frog.pose], frog.x, frog.y - frog.lift, frog.facing === -1);
+    const frame = frames[frog.pose];
+    sprite(buf, frame, frog.x, frog.y - frog.lift, frog.facing === -1);
+    if (frog.face) drawAccessory(buf, frog.face, frame);
+    if (frog.hat) drawAccessory(buf, frog.hat, frame);
     if (frog.tongue) {
       const m = mouth();
       const t = frog.tongue;
@@ -380,7 +490,11 @@ function render(): Uint8Array {
       }
       rect(buf, '#c94a64', Math.round(t.x) - 1, Math.round(t.y) - 1, 2, 2);
     }
-    if (frog.bubble) sprite(buf, NOTICE_BUBBLE, frog.x + 5, frog.y - frog.lift - 9);
+    const head = headAnchor(frame);
+    const hatTop = frog.hat ? frog.hat.dy : 0;
+    const topY = frog.y - frog.lift + head.y + Math.min(0, hatTop);
+    if (frog.bubble) sprite(buf, NOTICE_BUBBLE, frog.x + 5, topY - 9);
+    drawWhisper(buf, frog.x + 8, topY);
   }
   for (const b of bugs) {
     if (b.gone || b.t < 0) continue;
@@ -471,38 +585,62 @@ function encodeGif(frames: GifFrame[]): Buffer {
   out.push(0x3b);
   return Buffer.from(out);
 }
-
 // ── Run ───────────────────────────────────────────────────────────────────
 
-const frames: GifFrame[] = [];
-let previous: Uint8Array | null = null;
-for (const _ of script()) {
-  updateBugs();
-  updateParticles();
-  const buf = render();
-  time += DT;
-
-  // Only store the rectangle that changed since the last frame.
-  let x0 = W, y0 = H, x1 = -1, y1 = -1;
-  for (let y = 0; y < H; y++) {
-    for (let x = 0; x < W; x++) {
-      if (previous && previous[y * W + x] === buf[y * W + x]) continue;
-      x0 = Math.min(x0, x); y0 = Math.min(y0, y); x1 = Math.max(x1, x); y1 = Math.max(y1, y);
-    }
-  }
-  if (x1 < 0) {
-    frames[frames.length - 1].delay += DELAY_CS;
-  } else {
-    const w = x1 - x0 + 1;
-    const h = y1 - y0 + 1;
-    const pixels = new Uint8Array(w * h);
-    for (let y = 0; y < h; y++) pixels.set(buf.subarray((y0 + y) * W + x0, (y0 + y) * W + x0 + w), y * w);
-    frames.push({ x: x0, y: y0, w, h, pixels, delay: DELAY_CS });
-  }
-  previous = buf;
+/** Puts everything back to the opening scene: an egg on the Classic pond. */
+function reset(): void {
+  Object.assign(frog, {
+    x: 0, lift: 0, facing: 1, pose: 'idle', bubble: false, tongue: null, hat: null, face: null,
+  });
+  Object.assign(egg, { wobble: false, hatchT: -1 });
+  actor = 'egg';
+  time = 0;
+  bugs.length = 0;
+  particles.length = 0;
+  pond = makePond('classic', []);
+  nextPond = null;
+  wipe = 0;
+  night = false;
+  whisper = null;
 }
 
-mkdirSync('images', { recursive: true });
-const gif = encodeGif(frames);
-writeFileSync(OUT, gif);
-console.log(`${OUT}: ${frames.length} frames, ${colors.length} colors, ${(gif.length / 1024).toFixed(0)} KB`);
+function renderGif(story: () => Generator, out: string): void {
+  reset();
+  const frames: GifFrame[] = [];
+  let previous: Uint8Array | null = null;
+  for (const _ of story()) {
+    updateBugs();
+    updateParticles();
+    const buf = render();
+    time += DT;
+
+    // Only store the rectangle that changed since the last frame.
+    let x0 = W, y0 = H, x1 = -1, y1 = -1;
+    for (let y = 0; y < H; y++) {
+      for (let x = 0; x < W; x++) {
+        if (previous && previous[y * W + x] === buf[y * W + x]) continue;
+        x0 = Math.min(x0, x); y0 = Math.min(y0, y); x1 = Math.max(x1, x); y1 = Math.max(y1, y);
+      }
+    }
+    if (x1 < 0) {
+      frames[frames.length - 1].delay += DELAY_CS;
+    } else {
+      const w = x1 - x0 + 1;
+      const h = y1 - y0 + 1;
+      const pixels = new Uint8Array(w * h);
+      for (let y = 0; y < h; y++) pixels.set(buf.subarray((y0 + y) * W + x0, (y0 + y) * W + x0 + w), y * w);
+      frames.push({ x: x0, y: y0, w, h, pixels, delay: DELAY_CS });
+    }
+    previous = buf;
+  }
+
+  if (colors.length > 256) throw new Error(`GIFs hold 256 colors; this one needs ${colors.length}`);
+  mkdirSync('images', { recursive: true });
+  const gif = encodeGif(frames);
+  writeFileSync(out, gif);
+  const seconds = (frames.reduce((sum, f) => sum + f.delay, 0) / 100).toFixed(1);
+  console.log(`${out}: ${frames.length} frames, ${seconds} s, ${(gif.length / 1024).toFixed(0)} KB`);
+}
+
+renderGif(basics, 'images/demo.gif');
+renderGif(customize, 'images/customize.gif');

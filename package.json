@@ -126,7 +126,7 @@
   "scripts": {
     "build": "node esbuild.mjs",
     "watch": "node esbuild.mjs --watch",
-    "typecheck": "tsc -p . && tsc -p src/webview",
+    "typecheck": "tsc -p . && tsc -p src/webview && tsc -p scripts",
     "vscode:prepublish": "npm run typecheck && node esbuild.mjs --production",
     "package": "vsce package",
     "pretest": "esbuild test/*.test.ts --bundle --platform=node --outdir=out-test --log-level=warning",

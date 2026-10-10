@@ -1,5 +1,5 @@
 {
-  // Extension host code (Node). The webview has its own tsconfig in src/webview.
+  // Extension host code (Node). The webview and scripts have their own tsconfigs.
   "compilerOptions": {
     "target": "ES2022",
     "module": "commonjs",
@@ -11,6 +11,6 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true
   },
-  "include": ["src/**/*.ts", "test/**/*.ts", "scripts/**/*.ts"],
+  "include": ["src/**/*.ts", "test/**/*.ts"],
   "exclude": ["src/webview/**", "node_modules", "dist"]
 }
