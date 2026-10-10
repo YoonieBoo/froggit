@@ -64,7 +64,12 @@
       },
       {
         "command": "froggit.debugAddXp",
-        "title": "Debug \u2014 Add 10 XP",
+        "title": "Debug — Add 10 XP",
+        "category": "Froggit"
+      },
+      {
+        "command": "froggit.debugWhisper",
+        "title": "Debug — Whisper Now",
         "category": "Froggit"
       }
     ],
@@ -72,6 +77,10 @@
       "commandPalette": [
         {
           "command": "froggit.debugAddXp",
+          "when": "froggit.devMode"
+        },
+        {
+          "command": "froggit.debugWhisper",
           "when": "froggit.devMode"
         }
       ]
@@ -88,6 +97,28 @@
           "type": "boolean",
           "default": false,
           "description": "Calmer pond: the frog stays put unless it's eating, with no confetti or water shimmer. Also turns on automatically when your operating system's 'reduce motion' setting is on."
+        },
+        "froggit.whispers.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Froggit Whispers: now and then, the frog says something encouraging in a little speech bubble."
+        },
+        "froggit.whispers.interval": {
+          "type": "number",
+          "enum": [
+            5,
+            10,
+            15,
+            30
+          ],
+          "enumItemLabels": [
+            "Every 5 minutes",
+            "Every 10 minutes",
+            "Every 15 minutes",
+            "Every 30 minutes"
+          ],
+          "default": 10,
+          "description": "How often the frog whispers. Only time with the pond on screen counts."
         }
       }
     }

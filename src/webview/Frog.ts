@@ -1,8 +1,11 @@
+import type { Customization } from '../shared/customization';
 import { AnimationPlayer, type Animation } from './animation';
 import type { Prey } from './Bugs';
 import { motion } from './motion';
 import { CONFETTI, type Particles } from './Particles';
-import { makeSprite, type Screen } from './renderer';
+import { makeSprite, type Screen, type Sprite } from './renderer';
+import { outfitFor, type Accessory, type Outfit } from './outfit';
+import { headAnchor } from './sprites/accessories';
 import {
   FROG_BLINK,
   FROG_CROUCH,
@@ -24,18 +27,29 @@ type FrogState =
   | 'happy'
   | 'celebrate';
 
-function createAnimations(): Record<FrogState, Animation> {
-  const idle0 = makeSprite(FROG_IDLE_0);
-  const blink = makeSprite(FROG_BLINK);
-  const crouch = makeSprite(FROG_CROUCH);
+interface Point {
+  x: number;
+  y: number;
+}
+
+/** Builds the animations, recording where the head is in each frame for accessories. */
+function createAnimations(heads: Map<Sprite, Point>): Record<FrogState, Animation> {
+  const frame = (rows: string[]) => {
+    const sprite = makeSprite(rows);
+    heads.set(sprite, headAnchor(rows));
+    return sprite;
+  };
+  const idle0 = frame(FROG_IDLE_0);
+  const blink = frame(FROG_BLINK);
+  const crouch = frame(FROG_CROUCH);
   return {
-    idle: { frames: [idle0, makeSprite(FROG_IDLE_1)], fps: 1.5, loop: true },
+    idle: { frames: [idle0, frame(FROG_IDLE_1)], fps: 1.5, loop: true },
     blink: { frames: [blink], fps: 7, loop: false },
     crouch: { frames: [crouch], fps: 8, loop: false },
-    jump: { frames: [makeSprite(FROG_JUMP)], fps: 1, loop: true },
+    jump: { frames: [frame(FROG_JUMP)], fps: 1, loop: true },
     land: { frames: [crouch], fps: 10, loop: false },
     notice: { frames: [idle0], fps: 1, loop: true },
-    eat: { frames: [makeSprite(FROG_EAT)], fps: 1, loop: true },
+    eat: { frames: [frame(FROG_EAT)], fps: 1, loop: true },
     happy: { frames: [blink], fps: 1, loop: true },
     celebrate: { frames: [crouch], fps: 1, loop: true },
   };
@@ -82,10 +96,14 @@ export class Frog {
 
   private state: FrogState = 'idle';
   private stateTime = 0;
-  private readonly anims = createAnimations();
+  private readonly heads = new Map<Sprite, Point>();
+  private readonly anims = createAnimations(this.heads);
   private readonly bubble = makeSprite(NOTICE_BUBBLE);
   private readonly player = new AnimationPlayer();
   private sceneWidth = 0;
+
+  /** What it's wearing. Drawn on top of whatever frame is showing. */
+  private outfit: Outfit = { hat: null, face: null };
 
   private nextBlinkIn = randomBetween(2, 5);
   private nextActionIn = randomBetween(2, 4);
@@ -116,6 +134,26 @@ export class Frog {
     return this.x + this.width / 2;
   }
 
+  /** True while it's reacting, hunting or partying: no time for small talk. */
+  get busy(): boolean {
+    return (
+      this.prey !== null ||
+      this.meals.length > 0 ||
+      this.celebratePending ||
+      this.state === 'notice' ||
+      this.state === 'eat' ||
+      this.state === 'happy' ||
+      this.state === 'celebrate'
+    );
+  }
+
+  /** The highest pixel of the frog right now, including its hat and any hop. */
+  get topY(): number {
+    const head = this.heads.get(this.player.frame)!;
+    const hatTop = this.outfit.hat ? this.outfit.hat.dy : 0;
+    return this.y - this.lift + head.y + Math.min(0, hatTop);
+  }
+
   /** Puts the frog on the ground line, keeping it inside the scene. */
   placeOnGround(groundY: number, sceneWidth: number): void {
     this.sceneWidth = sceneWidth;
@@ -128,6 +166,10 @@ export class Frog {
   /** Teleports to x (e.g. where the egg was), staying inside the scene. */
   moveTo(x: number): void {
     this.x = this.clampX(x);
+  }
+
+  setOutfit(look: Customization): void {
+    this.outfit = outfitFor(look);
   }
 
   /** Bugs to hunt down, in order. */
@@ -229,11 +271,19 @@ export class Frog {
   }
 
   draw(screen: Screen): void {
-    screen.drawSprite(this.player.frame, this.x, this.y - this.lift, this.facing === -1);
+    const frame = this.player.frame;
+    const top = this.y - this.lift;
+    screen.drawSprite(frame, this.x, top, this.facing === -1);
+    const { hat, face } = this.outfit;
+    if (face) this.drawAccessory(screen, face, frame, top);
+    if (hat) this.drawAccessory(screen, hat, frame, top);
 
     if (this.state === 'eat' && this.tongue > 0) this.drawTongue(screen);
     if (this.state === 'notice') {
-      screen.drawSprite(this.bubble, this.x + this.width / 2 - 3, this.y - this.lift - 9);
+      // Float above the hat, if there is one.
+      const head = this.heads.get(frame)!;
+      const hatTop = hat ? head.y + hat.dy : 0;
+      screen.drawSprite(this.bubble, this.x + this.width / 2 - 3, top + Math.min(0, hatTop) - 9);
     }
   }
 
@@ -379,6 +429,14 @@ export class Frog {
       x: m.x + (this.tongueTarget.x - m.x) * this.tongue,
       y: m.y + (this.tongueTarget.y - m.y) * this.tongue,
     };
+  }
+
+  /** Pins an accessory to the head of the current frame, mirroring it with the frog. */
+  private drawAccessory(screen: Screen, item: Accessory, frame: Sprite, top: number): void {
+    const head = this.heads.get(frame)!;
+    const left = head.x + item.dx; // in the right-facing sprite
+    const x = this.facing === 1 ? this.x + left : this.x + this.width - left - item.sprite.w;
+    screen.drawSprite(item.sprite, x, top + head.y + item.dy, this.facing === -1);
   }
 
   private drawTongue(screen: Screen): void {

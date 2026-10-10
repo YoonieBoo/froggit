@@ -1,28 +1,7 @@
+import { DEFAULT_POND, type DecorationId, type PondId } from '../shared/customization';
+import { DECORATION_ART, decorationBase } from './decorations';
 import { motion } from './motion';
-import type { Screen } from './renderer';
-
-// Scene colors. These are separate from the sprite palette because the
-// background is drawn procedurally rather than from grids.
-const C = {
-  skyTop: '#a9dccd',
-  skyLow: '#c6e8cf',
-  bush: '#4f8f5a',
-  bushDark: '#3f7a4b',
-  cattail: '#6b4a2e',
-  reed: '#5a8f3e',
-  water: '#3f8fa3',
-  waterDark: '#357a8e',
-  shimmer: '#86cad3',
-  pad: '#4fa64a',
-  padDark: '#3b8a3c',
-  grassTop: '#7cbf55',
-  grass: '#5f9e46',
-  grassDark: '#4a8538',
-  stone: '#9aa0a6',
-  stoneDark: '#7b8188',
-  flowerYellow: '#f2d75a',
-  flowerPink: '#f29ab0',
-};
+import { POND_THEMES, type Paint, type PondTheme, type SceneBox } from './pondThemes';
 
 /** Small deterministic random generator so the scenery doesn't reshuffle. */
 function seededRandom(seed: number): () => number {
@@ -42,18 +21,40 @@ interface Shimmer {
   phase: number;
 }
 
-/** The pond scenery: sky, far bank, water with lily pads, and the grassy near bank. */
+/**
+ * The pond scenery: sky, far bank, water with lily pads, and the grassy near bank,
+ * colored and decorated by the current theme.
+ */
 export class Pond {
   /** Row the frog's feet stand on. */
   groundY = 0;
   waterTop = 0;
 
+  private themeId: PondId = DEFAULT_POND;
+  private decorations: readonly DecorationId[] = [];
   private background?: HTMLCanvasElement;
   private shimmers: Shimmer[] = [];
+  private ambient?: (ctx: CanvasRenderingContext2D, time: number) => void;
   private width = 0;
+  private height = 0;
+
+  get theme(): PondTheme {
+    return POND_THEMES[this.themeId];
+  }
+
+  /** Switches theme and decorations, redrawing the scenery if anything changed. */
+  setLook(themeId: PondId, decorations: readonly DecorationId[]): void {
+    const same =
+      themeId === this.themeId && decorations.join() === this.decorations.join();
+    if (same) return;
+    this.themeId = themeId;
+    this.decorations = decorations;
+    if (this.background) this.build(this.width, this.height);
+  }
 
   build(width: number, height: number): void {
     this.width = width;
+    this.height = height;
     this.groundY = height - Math.max(8, Math.round(height * 0.22));
     this.waterTop = Math.round(height * 0.45);
 
@@ -61,15 +62,21 @@ export class Pond {
     canvas.width = width;
     canvas.height = height;
     const g = canvas.getContext('2d')!;
+    // The layout stream stays the same for every theme; extras get their own
+    // stream so adding them never moves the lily pads or stones.
     const rand = seededRandom(1337);
-    const rect = (color: string, x: number, y: number, w = 1, h = 1) => {
+    const extrasRand = seededRandom(4242);
+    const rect: Paint = (color, x, y, w = 1, h = 1) => {
       g.fillStyle = color;
       g.fillRect(x, y, w, h);
     };
+    const { colors: C, sky, ground, ambient } = this.theme;
+    const scene: SceneBox = { width, height, waterTop: this.waterTop, groundY: this.groundY };
 
     // Sky in two soft bands.
     rect(C.skyTop, 0, 0, width, height);
     rect(C.skyLow, 0, Math.round(this.waterTop * 0.55), width, this.waterTop);
+    sky?.(rect, scene, extrasRand);
 
     // Far bank: bumpy bushes along the top edge of the water.
     for (let x = 0; x < width; x += 3) {
@@ -97,7 +104,7 @@ export class Pond {
     for (let i = 0; i < padCount; i++) {
       const x = Math.floor(((i + 0.2 + rand() * 0.6) / padCount) * width) - 4;
       const y = this.waterTop + 2 + Math.floor(rand() * Math.max(1, this.groundY - this.waterTop - 6));
-      this.drawLilyPad(rect, x, y, rand() < 0.4);
+      this.drawLilyPad(rect, x, y, rand() < 0.4, C.pad, C.padDark, C.water);
     }
 
     // Near bank: grass with a lighter top edge.
@@ -114,7 +121,7 @@ export class Pond {
       const tall = 1 + Math.floor(rand() * 3);
       rect(C.grassTop, x, this.groundY - tall, 1, tall);
       if (rand() < 0.12) {
-        rect(rand() < 0.5 ? C.flowerYellow : C.flowerPink, x, this.groundY - tall - 1);
+        rect(rand() < 0.5 ? C.flowerA : C.flowerB, x, this.groundY - tall - 1);
       }
     }
 
@@ -127,7 +134,13 @@ export class Pond {
       rect(C.stoneDark, x, y + 2, 5, 1);
     }
 
+    ground?.(rect, scene, extrasRand);
+    for (const id of this.decorations) {
+      const art = DECORATION_ART[id];
+      art.draw(rect, Math.round(art.at * width), decorationBase(art.placement, scene), C, g);
+    }
     this.background = canvas;
+    this.ambient = ambient?.(scene, extrasRand);
 
     // Moving light streaks on the water.
     this.shimmers = Array.from({ length: Math.max(3, Math.floor(width / 25)) }, () => ({
@@ -139,13 +152,12 @@ export class Pond {
     }));
   }
 
-  draw(screen: Screen, time: number): void {
+  draw(ctx: CanvasRenderingContext2D, time: number): void {
     if (!this.background) return;
-    const ctx = screen.ctx;
     ctx.drawImage(this.background, 0, 0);
     if (motion.reduced) return;
 
-    ctx.fillStyle = C.shimmer;
+    ctx.fillStyle = this.theme.colors.shimmer;
     for (const s of this.shimmers) {
       // Fade in and out so streaks don't pop.
       const alpha = 0.5 + 0.5 * Math.sin(time * 1.3 + s.phase);
@@ -155,19 +167,23 @@ export class Pond {
       ctx.fillRect(x, s.y, s.len, 1);
     }
     ctx.globalAlpha = 1;
+    this.ambient?.(ctx, time);
   }
 
   private drawLilyPad(
-    rect: (color: string, x: number, y: number, w?: number, h?: number) => void,
+    rect: Paint,
     x: number,
     y: number,
     small: boolean,
+    pad: string,
+    padDark: string,
+    water: string,
   ): void {
     const rows = small ? [[1, 4], [0, 6], [1, 4]] : [[2, 5], [0, 9], [0, 9], [2, 5]];
-    rows.forEach(([offset, w], i) => rect(C.pad, x + offset, y + i, w, 1));
+    rows.forEach(([offset, w], i) => rect(pad, x + offset, y + i, w, 1));
     // Notch and underside shading.
-    rect(C.water, x + (small ? 4 : 6), y + 1, small ? 2 : 3, 1);
+    rect(water, x + (small ? 4 : 6), y + 1, small ? 2 : 3, 1);
     const last = rows[rows.length - 1];
-    rect(C.padDark, x + last[0], y + rows.length - 1, last[1], 1);
+    rect(padDark, x + last[0], y + rows.length - 1, last[1], 1);
   }
 }

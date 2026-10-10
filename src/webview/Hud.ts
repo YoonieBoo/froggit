@@ -18,12 +18,14 @@ export class Hud {
     if (progress.nextStageXp === null) {
       this.fill.style.width = '100%';
       this.text.textContent = `${progress.xp} XP`;
-      return;
+    } else {
+      const into = progress.xp - progress.stageStartXp;
+      const span = progress.nextStageXp - progress.stageStartXp;
+      this.fill.style.width = `${Math.min(100, (into / span) * 100)}%`;
+      this.text.textContent = `${into}/${span} XP`;
     }
-    const into = progress.xp - progress.stageStartXp;
-    const span = progress.nextStageXp - progress.stageStartXp;
-    this.fill.style.width = `${Math.min(100, (into / span) * 100)}%`;
-    this.text.textContent = `${into}/${span} XP`;
+    // Narrow sidebars hide the numbers, so keep them in a tooltip too.
+    this.root.title = `${progress.stageName}: ${this.text.textContent}`;
   }
 
   /** Text that drifts up and fades out at a position in CSS pixels. */

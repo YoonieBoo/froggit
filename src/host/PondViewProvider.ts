@@ -14,10 +14,12 @@ export class PondViewProvider implements vscode.WebviewViewProvider {
   /**
    * @param getSnapshot Builds the full current state. Sent whenever the webview
    *   (re)loads, because a hidden webview is destroyed and misses events.
+   * @param onCustomize Called with the look the user picked. Not yet validated.
    */
   constructor(
     private readonly extensionUri: vscode.Uri,
     private readonly getSnapshot: () => HostMessage,
+    private readonly onCustomize: (raw: unknown) => void,
   ) {}
 
   resolveWebviewView(webviewView: vscode.WebviewView): void {
@@ -37,6 +39,7 @@ export class PondViewProvider implements vscode.WebviewViewProvider {
     webview.onDidReceiveMessage((message: unknown) => {
       if (!isWebviewMessage(message)) return;
       if (message.type === 'ready') this.post(this.getSnapshot());
+      else if (message.type === 'customize') this.onCustomize(message.customization);
     });
 
     webviewView.onDidDispose(() => {
@@ -82,6 +85,10 @@ export class PondViewProvider implements vscode.WebviewViewProvider {
     <span id="xp-text"></span>
   </div>
   <div id="floaters"></div>
+  <div id="whisper" class="whisper" role="status" hidden></div>
+  <button id="wardrobe-button" class="wood-button" title="Wardrobe" aria-label="Open wardrobe"
+    aria-expanded="false" aria-controls="wardrobe" hidden></button>
+  <div id="wardrobe" role="dialog" aria-label="Wardrobe" hidden></div>
   <script nonce="${nonce}" src="${scriptUri}"></script>
 </body>
 </html>`;

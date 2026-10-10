@@ -1,13 +1,17 @@
-import type { HostMessage, WebviewMessage } from '../shared/protocol';
+import type { Customization } from '../shared/customization';
+import type { HostMessage, PondSettings, WebviewMessage } from '../shared/protocol';
 import type { StageId } from '../shared/stages';
 import { Bugs } from './Bugs';
 import { Egg } from './Egg';
 import { Frog } from './Frog';
 import { Hud } from './Hud';
-import { setReducedMotionSetting } from './motion';
+import { motion, setReducedMotionSetting } from './motion';
 import { Particles } from './Particles';
 import { Pond } from './Pond';
 import { Screen } from './renderer';
+import { Wardrobe } from './Wardrobe';
+import { WhisperBubble } from './WhisperBubble';
+import { pickWhisper, WhisperClock } from './whispers';
 
 // Provided by VS Code inside webviews. Can only be called once.
 declare function acquireVsCodeApi(): { postMessage(message: WebviewMessage): void };
@@ -25,6 +29,58 @@ const particles = new Particles();
 const bugs = new Bugs();
 const egg = new Egg(particles);
 const frog = new Frog(particles, (prey) => bugs.remove(prey));
+const wardrobe = new Wardrobe((look) => {
+  applyLook(look);
+  vscode.postMessage({ type: 'customize', customization: look });
+});
+
+const whisperBubble = new WhisperBubble();
+const whisperClock = new WhisperClock(10 * 60);
+let whispersOn = true;
+let lastWhisper: string | null = null;
+
+function applySettings(settings: PondSettings): void {
+  setReducedMotionSetting(settings.reducedMotion);
+  document.body.classList.toggle('calm', motion.reduced);
+  whispersOn = settings.whispers;
+  whisperClock.setInterval(settings.whisperMinutes * 60);
+  if (!whispersOn) {
+    whisperBubble.hide();
+    whisperClock.restart();
+  }
+}
+
+function whisper(): void {
+  lastWhisper = pickWhisper(lastWhisper);
+  whisperBubble.show(lastWhisper);
+  whisperClock.restart();
+  placeWhisper();
+}
+
+/** Keeps the bubble above the frog's head (or hat) as it moves. */
+function placeWhisper(): void {
+  const pos = screen.toCss(frog.centerX, frog.topY);
+  whisperBubble.place(pos.x, pos.y);
+}
+
+/** Speaks when a message is due, and only if nothing else is going on. */
+function updateWhispers(dt: number): void {
+  // Bug hunting comes first: make way for the "!" and the tongue.
+  if (whisperBubble.showing && (frog.busy || showEgg())) whisperBubble.hide();
+  if (whispersOn) {
+    const free = !showEgg() && !frog.busy && !wardrobe.isOpen && !whisperBubble.showing;
+    if (whisperClock.update(dt, free)) whisper();
+  }
+  whisperBubble.update(dt);
+  if (whisperBubble.showing) placeWhisper();
+}
+
+function applyLook(look: Customization): void {
+  frog.setOutfit(look);
+  pond.setLook(look.pond, look.decorations);
+  document.body.dataset.hud = pond.theme.hud;
+  render();
+}
 
 /** null until the host's first snapshot arrives. */
 let stage: StageId | null = null;
@@ -47,7 +103,7 @@ function layout(): void {
 
 function render(): void {
   screen.begin();
-  pond.draw(screen, elapsed);
+  pond.draw(screen.ctx, elapsed);
   if (stage !== null) {
     if (showEgg()) egg.draw(screen, elapsed);
     else frog.draw(screen);
@@ -72,6 +128,7 @@ function tick(now: number): void {
   else frog.update(dt);
   bugs.update(dt);
   particles.update(dt);
+  if (stage !== null) updateWhispers(dt);
   render();
 }
 
@@ -85,11 +142,22 @@ function floatText(message: string, big = false): void {
 function handleMessage(message: HostMessage): void {
   switch (message.type) {
     case 'settings':
-      setReducedMotionSetting(message.settings.reducedMotion);
+      applySettings(message.settings);
+      break;
+
+    case 'whisperNow':
+      if (!showEgg()) whisper();
+      break;
+
+    case 'customization':
+      applyLook(message.customization);
+      wardrobe.sync(message.customization);
       break;
 
     case 'snapshot':
-      setReducedMotionSetting(message.settings.reducedMotion);
+      applySettings(message.settings);
+      applyLook(message.customization);
+      wardrobe.sync(message.customization);
       stage = message.progress.stage;
       hud.show(message.progress);
       bugs.setCounts(message.bugs);

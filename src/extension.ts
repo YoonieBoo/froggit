@@ -1,32 +1,45 @@
 import * as vscode from 'vscode';
 import { ActivityTracker } from './host/ActivityTracker';
 import { BugTracker } from './host/BugTracker';
+import { CUSTOMIZATION_KEY, CustomizationStore } from './host/CustomizationStore';
 import { PondViewProvider } from './host/PondViewProvider';
 import { Progression } from './host/Progression';
 import { PROGRESS_KEY, ProgressStore } from './host/ProgressStore';
 import type { XpEvent } from './host/XpEngine';
 import type { HostMessage, PondSettings } from './shared/protocol';
 
+const WHISPER_MINUTES = [5, 10, 15, 30];
+
 function readSettings(): PondSettings {
+  const config = vscode.workspace.getConfiguration('froggit');
+  const minutes = config.get<number>('whispers.interval', 10);
   return {
-    reducedMotion: vscode.workspace.getConfiguration('froggit').get<boolean>('reducedMotion', false),
+    reducedMotion: config.get<boolean>('reducedMotion', false),
+    whispers: config.get<boolean>('whispers.enabled', true),
+    // A hand-edited settings.json could hold anything; fall back to the default.
+    whisperMinutes: WHISPER_MINUTES.includes(minutes) ? minutes : 10,
   };
 }
 
 export function activate(context: vscode.ExtensionContext): void {
-  // Let Settings Sync carry the frog to other machines.
-  context.globalState.setKeysForSync([PROGRESS_KEY]);
+  // Let Settings Sync carry the frog (and its outfit) to other machines.
+  context.globalState.setKeysForSync([PROGRESS_KEY, CUSTOMIZATION_KEY]);
 
   const bugs = new BugTracker();
   const activity = new ActivityTracker();
+  const looks = new CustomizationStore(context.globalState);
 
   const snapshot = (): HostMessage => ({
     type: 'snapshot',
     bugs: bugs.bugCounts,
     progress: progression.view,
     settings: readSettings(),
+    customization: looks.load(),
   });
-  const pond = new PondViewProvider(context.extensionUri, snapshot);
+  // Echo the saved look back, so the pond shows exactly what was stored.
+  const customize = (raw: unknown) =>
+    pond.post({ type: 'customization', customization: looks.save(raw) });
+  const pond = new PondViewProvider(context.extensionUri, snapshot, customize);
 
   const progression = new Progression(new ProgressStore(context.globalState), (update) =>
     pond.post({ type: 'progress', ...update }),
@@ -75,7 +88,7 @@ export function activate(context: vscode.ExtensionContext): void {
     activity.onActivity((event) => progression.award([event])),
 
     vscode.workspace.onDidChangeConfiguration((e) => {
-      if (e.affectsConfiguration('froggit.reducedMotion')) {
+      if (e.affectsConfiguration('froggit.reducedMotion') || e.affectsConfiguration('froggit.whispers')) {
         pond.post({ type: 'settings', settings: readSettings() });
       }
     }),
@@ -87,6 +100,7 @@ export function activate(context: vscode.ExtensionContext): void {
     void vscode.commands.executeCommand('setContext', 'froggit.devMode', true);
     context.subscriptions.push(
       vscode.commands.registerCommand('froggit.debugAddXp', () => progression.debugAddXp(10)),
+      vscode.commands.registerCommand('froggit.debugWhisper', () => pond.post({ type: 'whisperNow' })),
     );
   }
 }

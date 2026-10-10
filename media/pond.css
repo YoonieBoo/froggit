@@ -17,43 +17,75 @@ body {
   image-rendering: pixelated;
 }
 
-/* The HUD sits on the pond's light sky, so it uses fixed colors rather than theme colors. */
+/* The HUD is a wooden plank, like the wardrobe button and board, so it reads
+   on every pond. The outline is four box-shadows without corners (notched
+   pixel corners, as on the speech bubble), plus a light top and dark bottom
+   bevel. 2px = one art pixel. */
 #hud {
   position: absolute;
-  top: 4px;
-  left: 6px;
+  top: 6px;
+  left: 8px;
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 2px 6px;
-  border-radius: 3px;
-  background: rgba(255, 255, 255, 0.6);
-  color: #1f3a24;
+  padding: 3px 6px;
+  background: #b07440;
+  box-shadow:
+    0 -2px 0 0 #3e2617,
+    0 2px 0 0 #3e2617,
+    -2px 0 0 0 #3e2617,
+    2px 0 0 0 #3e2617,
+    inset 0 2px 0 0 #d39a5c,
+    inset 0 -2px 0 0 #7d4e2b;
+  color: #fff3dc;
   font-size: 10px;
   line-height: 14px;
+  text-shadow: 1px 1px 0 #3e2617;
+  /* Leave room for the wardrobe button on the right. */
+  max-width: calc(100% - 60px);
+  flex-wrap: wrap;
 }
 
 #hud[hidden] {
   display: none;
 }
 
-#stage-name {
-  font-weight: 600;
+/* Night ponds get light floating text so it shows against the dark sky. */
+body[data-hud='dark'] .floater {
+  color: #f1f5ff;
+  text-shadow: 0 0 2px #0c122c, 0 0 2px #0c122c;
 }
 
+#stage-name {
+  font-weight: 700;
+}
+
+/* The XP bar: a groove carved into the plank, filling up with frog green. */
 .xp-bar {
   width: 60px;
-  height: 5px;
-  border-radius: 2px;
-  background: rgba(31, 58, 36, 0.2);
+  height: 4px;
+  border: 2px solid #3e2617;
+  background: #5a3620;
   overflow: hidden;
 }
 
 #xp-fill {
   width: 0;
   height: 100%;
-  background: #469a3c;
+  background: #6cc04a;
+  box-shadow: inset 0 2px 0 0 #9be36a;
   transition: width 0.6s ease-out;
+}
+
+/* Narrow sidebars: keep the plank on one line. The numbers are in its tooltip. */
+@media (max-width: 280px) {
+  .xp-bar {
+    width: 36px;
+  }
+
+  #xp-text {
+    display: none;
+  }
 }
 
 #floaters {
@@ -89,5 +121,305 @@ body {
   100% {
     opacity: 0;
     margin-top: -24px;
+  }
+}
+
+/* ── Wooden controls ──────────────────────────────────────────────────────
+   Like the HUD, these are part of the pond's art, so they use fixed colors.
+   Each wooden button's pixel art is generated in Wardrobe.ts and handed over
+   in --wood-up / --wood-down. */
+
+[hidden] {
+  display: none !important;
+}
+
+.wood-button {
+  flex: none;
+  padding: 0;
+  border: 0;
+  background: var(--wood-up) center / 100% 100% no-repeat;
+  image-rendering: pixelated;
+  cursor: pointer;
+}
+
+.wood-button:hover {
+  filter: brightness(1.08);
+}
+
+.wood-button:active {
+  background-image: var(--wood-down);
+}
+
+.wood-button:focus-visible,
+.wood-text-button:focus-visible,
+.tab:focus-visible,
+.tile:focus-visible {
+  outline: 1px solid var(--vscode-focusBorder);
+  outline-offset: 1px;
+}
+
+#wardrobe-button {
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  z-index: 2;
+}
+
+/* The board: a wooden panel over the pond. Borders are 2px = one art pixel. */
+#wardrobe {
+  position: absolute;
+  inset: 4px;
+  z-index: 3;
+  overflow-y: auto;
+  box-sizing: border-box;
+  padding: 6px 8px;
+  border: 2px solid #3e2617;
+  background: #b07440;
+  box-shadow: inset 2px 2px 0 #d39a5c, inset -2px -2px 0 #7d4e2b;
+  color: #fff3dc;
+  font-size: 11px;
+}
+
+.board-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.board-title {
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-shadow: 1px 1px 0 #3e2617;
+}
+
+.board-body {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+/* Tabs: wooden name plates. The open one is lighter and joins the board. */
+.tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 6px;
+  border-bottom: 2px solid #3e2617;
+}
+
+.tab {
+  margin-bottom: -2px;
+  padding: 2px 8px;
+  border: 2px solid #3e2617;
+  background: #7d4e2b;
+  color: #f1dfb8;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.tab:hover {
+  color: #fff3dc;
+}
+
+.tab[aria-selected='true'] {
+  border-bottom-color: #b07440;
+  background: #b07440;
+  color: #fff3dc;
+  text-shadow: 1px 1px 0 #3e2617;
+}
+
+.panels {
+  flex: 1;
+  min-width: 0;
+}
+
+.wood-text-button {
+  align-self: flex-start;
+  padding: 2px 8px;
+  border: 2px solid #3e2617;
+  background: #d39a5c;
+  box-shadow: inset 0 -2px 0 #a86b3c;
+  color: #3e2617;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.wood-text-button:hover {
+  background: #e0aa6c;
+}
+
+.wood-text-button:active {
+  box-shadow: inset 0 2px 0 #a86b3c;
+}
+
+/* A little framed mirror showing the whole outfit. */
+.mirror {
+  flex: none;
+  padding: 2px;
+  border: 2px solid #3e2617;
+  background: #a9dccd;
+  box-shadow: inset 0 -2px 0 #7cbf55;
+}
+
+.mirror canvas,
+.tile canvas {
+  display: block;
+  image-rendering: pixelated;
+}
+
+.shelves {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.shelf-label {
+  margin-bottom: 2px;
+  line-height: 12px;
+  font-size: 10px;
+  font-weight: 600;
+  text-shadow: 1px 1px 0 #3e2617;
+}
+
+/* Items sit on a darker plank, like a shelf. */
+.shelf-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding-bottom: 4px;
+  border-bottom: 2px solid #7d4e2b;
+}
+
+.tile {
+  padding: 2px;
+  border: 2px solid #3e2617;
+  background: #f1dfb8;
+  line-height: 0;
+  cursor: pointer;
+}
+
+.tile:hover {
+  background: #fff0cf;
+}
+
+.tile.none {
+  background: #e3cfa6;
+}
+
+.tile[aria-pressed='true'] {
+  border-color: #f5c542;
+  background: #fff6d8;
+  box-shadow: 0 0 0 2px #3e2617;
+}
+
+.board-caption {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 10px;
+  opacity: 0.9;
+  text-shadow: 1px 1px 0 #3e2617;
+}
+
+/* Narrower sidebars: drop the mirror so each shelf fits on one row.
+   The tiles already preview every item. */
+@media (max-width: 379px) {
+  .mirror {
+    display: none;
+  }
+}
+
+/* ── Froggit Whispers ─────────────────────────────────────────────────────
+   A pixel speech bubble: the outline is drawn with four box-shadows and no
+   corners, which gives the notched corners of pixel-art bubbles. */
+
+.whisper {
+  position: absolute;
+  z-index: 1;
+  max-width: calc(100% - 12px);
+  padding: 2px 6px;
+  background: #fffaf0;
+  box-shadow:
+    0 -2px 0 0 #1f3a24,
+    0 2px 0 0 #1f3a24,
+    -2px 0 0 0 #1f3a24,
+    2px 0 0 0 #1f3a24;
+  color: #1f3a24;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 13px;
+  pointer-events: none;
+  transform-origin: 50% 100%;
+}
+
+.whisper-tail {
+  position: absolute;
+  top: 100%;
+  background: var(--tail-day) center / 100% 100% no-repeat;
+  image-rendering: pixelated;
+}
+
+body[data-hud='dark'] .whisper {
+  background: #26315f;
+  box-shadow:
+    0 -2px 0 0 #c9d3f5,
+    0 2px 0 0 #c9d3f5,
+    -2px 0 0 0 #c9d3f5,
+    2px 0 0 0 #c9d3f5;
+  color: #f1f5ff;
+}
+
+body[data-hud='dark'] .whisper-tail {
+  background-image: var(--tail-night);
+}
+
+/* A small pop in, then a fade out at the end. */
+.whisper.speaking {
+  animation-name: whisper;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+
+@keyframes whisper {
+  0% {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  5% {
+    opacity: 1;
+    transform: scale(1.04);
+  }
+  8% {
+    transform: scale(1);
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Reduced motion: just fade, no pop. */
+body.calm .whisper.speaking {
+  animation-name: whisper-calm;
+}
+
+@keyframes whisper-calm {
+  0% {
+    opacity: 0;
+  }
+  6%,
+  90% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
   }
 }
