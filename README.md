@@ -14,6 +14,9 @@ grows up.
 
 It's meant to sit quietly in the corner while you work, and make fixing bugs a little more fun.
 
+Froggit is made by one person. If it makes your day a little nicer, you can
+[buy me a coffee on Ko-fi](https://ko-fi.com/yooniestudio).
+
 ## Getting started
 
 1. Install **Froggit** from the [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=yoonie-studio.froggit), or search for "Froggit" in the Extensions view.
@@ -161,11 +164,6 @@ Press **F5** (or **Run > Start Debugging**) in VS Code to launch a development w
 a few debug commands: add 10 XP, lock or unlock the Holiday Pack, and start the New Year party.
 
 All art is original and drawn in code (see `src/webview/sprites/`).
-
-## Support
-
-Froggit is made by one person. If it makes your day a little nicer, you can
-[buy me a coffee on Ko-fi](https://ko-fi.com/yooniestudio).
 
 ## License
 

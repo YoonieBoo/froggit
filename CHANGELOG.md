@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.1
+
+- README: smaller GIFs that load properly in VS Code's extension page, and the Ko-fi line moved near the top.
+
 ## 0.3.0
 
 - New frogs now start as a Baby Frog straight away, after a quick hatch the first time you open the pond. The Egg stage is gone.
