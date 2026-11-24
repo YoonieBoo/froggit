@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { randomBytes } from 'crypto';
-import { isWebviewMessage, type HostMessage } from '../shared/protocol';
+import { isWebviewMessage, type HostMessage, type WebviewMessage } from '../shared/protocol';
 
 /**
  * Hosts the pond webview in the Explorer sidebar.
@@ -14,12 +14,13 @@ export class PondViewProvider implements vscode.WebviewViewProvider {
   /**
    * @param getSnapshot Builds the full current state. Sent whenever the webview
    *   (re)loads, because a hidden webview is destroyed and misses events.
-   * @param onCustomize Called with the look the user picked. Not yet validated.
+   * @param onMessage Handles everything else the pond asks for. Message types
+   *   are checked; payloads (like a look) are not yet validated.
    */
   constructor(
     private readonly extensionUri: vscode.Uri,
     private readonly getSnapshot: () => HostMessage,
-    private readonly onCustomize: (raw: unknown) => void,
+    private readonly onMessage: (message: Exclude<WebviewMessage, { type: 'ready' }>) => void,
   ) {}
 
   resolveWebviewView(webviewView: vscode.WebviewView): void {
@@ -39,7 +40,7 @@ export class PondViewProvider implements vscode.WebviewViewProvider {
     webview.onDidReceiveMessage((message: unknown) => {
       if (!isWebviewMessage(message)) return;
       if (message.type === 'ready') this.post(this.getSnapshot());
-      else if (message.type === 'customize') this.onCustomize(message.customization);
+      else this.onMessage(message);
     });
 
     webviewView.onDidDispose(() => {

@@ -36,6 +36,7 @@ export const PALETTE: Record<string, string> = {
   a: '#9a6532', // glasses frame
   z: '#3a3f5e', // sunglasses lens
   x: '#b4c3dc', // lens glint
+  W: '#d7dbd0', // beard shading
 
   // Wooden UI buttons
   K: '#3e2617', // outline, icons

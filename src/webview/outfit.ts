@@ -1,6 +1,6 @@
-import type { Customization, FaceId, HatId } from '../shared/customization';
+import type { Customization, ExtraId, FaceId, HatId } from '../shared/customization';
 import { makeSprite, type Sprite } from './renderer';
-import { FACE_ART, HAT_ART, type AccessoryArt } from './sprites/accessories';
+import { EXTRA_ART, FACE_ART, HAT_ART, type AccessoryArt } from './sprites/accessories';
 
 export interface Accessory {
   sprite: Sprite;
@@ -12,6 +12,7 @@ export interface Accessory {
 export interface Outfit {
   hat: Accessory | null;
   face: Accessory | null;
+  extra: Accessory | null;
 }
 
 const cache = new Map<AccessoryArt, Accessory>();
@@ -27,10 +28,12 @@ function toAccessory(art: AccessoryArt): Accessory {
 
 export const hatAccessory = (id: HatId): Accessory => toAccessory(HAT_ART[id]);
 export const faceAccessory = (id: FaceId): Accessory => toAccessory(FACE_ART[id]);
+export const extraAccessory = (id: ExtraId): Accessory => toAccessory(EXTRA_ART[id]);
 
 export function outfitFor(look: Customization): Outfit {
   return {
     hat: look.hat ? hatAccessory(look.hat) : null,
     face: look.face ? faceAccessory(look.face) : null,
+    extra: look.extra ? extraAccessory(look.extra) : null,
   };
 }

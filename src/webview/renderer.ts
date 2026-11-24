@@ -70,6 +70,18 @@ export class Screen {
     return { x: x * ratio, y: y * ratio };
   }
 
+  /** Converts CSS pixels (like a mouse position) to logical pixels. */
+  fromCss(x: number, y: number): { x: number; y: number } {
+    const ratio = this.scale / (window.devicePixelRatio || 1);
+    return { x: x / ratio, y: y / ratio };
+  }
+
+  /** Converts CSS pixels to logical pixels, rounding up. */
+  toLogical(x: number, y: number): { x: number; y: number } {
+    const ratio = this.scale / (window.devicePixelRatio || 1);
+    return { x: Math.ceil(x / ratio), y: Math.ceil(y / ratio) };
+  }
+
   /** Call once per frame before drawing. */
   begin(): void {
     this.ctx.setTransform(this.scale, 0, 0, this.scale, 0, 0);

@@ -23,11 +23,11 @@ describe('bug mapping', () => {
 });
 
 describe('stages', () => {
-  it('starts as an egg and hatches at the baby threshold', () => {
-    const baby = STAGES[1].minXp;
-    assert.equal(describeProgress(0).stage, 'egg');
-    assert.equal(describeProgress(baby - 1).stage, 'egg');
-    assert.equal(describeProgress(baby).stage, 'baby');
+  it('starts as a baby frog and grows up at the next threshold', () => {
+    const developer = STAGES[1].minXp;
+    assert.equal(describeProgress(0).stage, 'baby');
+    assert.equal(describeProgress(developer - 1).stage, 'baby');
+    assert.equal(describeProgress(developer).stage, 'developer');
   });
 
   it('reports progress toward the next stage, and none at the last', () => {

@@ -11,6 +11,14 @@ export class Hud {
   private readonly text = document.getElementById('xp-text')!;
   private readonly floaters = document.getElementById('floaters')!;
 
+  /** Where the plank is on screen, outline included, or null while it's hidden. */
+  get box(): { right: number; bottom: number } | null {
+    if (this.root.hidden) return null;
+    const rect = this.root.getBoundingClientRect();
+    // The outline is drawn with box-shadows, 2px outside the element.
+    return { right: rect.right + 2, bottom: rect.bottom + 2 };
+  }
+
   show(progress: ProgressView): void {
     this.root.hidden = false;
     this.stageName.textContent = progress.stageName;

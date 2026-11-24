@@ -1,5 +1,5 @@
-// Froggit Whispers: the little things the frog says now and then.
-// No DOM here, so the timing rules can be unit tested.
+// Froggit Whispers: the little things the frog says when you click it.
+// No DOM here, so it can be unit tested.
 
 export const WHISPERS: readonly string[] = [
   'you got this ♡',
@@ -23,35 +23,4 @@ export const WHISPERS: readonly string[] = [
 export function pickWhisper(last: string | null, rand: () => number = Math.random): string {
   const choices = WHISPERS.filter((w) => w !== last);
   return choices[Math.floor(rand() * choices.length)];
-}
-
-/**
- * Decides when the frog speaks. Driven by the pond's animation loop, which only
- * runs while the pond is on screen, so hidden time never counts and missed
- * messages never pile up: at most one is ever waiting.
- */
-export class WhisperClock {
-  private waited = 0;
-
-  constructor(private intervalSeconds: number) {}
-
-  setInterval(seconds: number): void {
-    this.intervalSeconds = seconds;
-  }
-
-  /** Starts the wait over, e.g. right after the frog spoke. */
-  restart(): void {
-    this.waited = 0;
-  }
-
-  /**
-   * Advances time. Returns true when a message is due and the frog is free to
-   * say it; if it's busy, the message simply waits.
-   */
-  update(dt: number, canSpeak: boolean): boolean {
-    this.waited = Math.min(this.waited + dt, this.intervalSeconds);
-    if (this.waited < this.intervalSeconds || !canSpeak) return false;
-    this.waited = 0;
-    return true;
-  }
 }

@@ -3,6 +3,8 @@ import { DECORATION_ART, decorationBase } from './decorations';
 import { motion } from './motion';
 import { POND_THEMES, type Paint, type PondTheme, type SceneBox } from './pondThemes';
 
+type HudBox = SceneBox['hud'];
+
 /** Small deterministic random generator so the scenery doesn't reshuffle. */
 function seededRandom(seed: number): () => number {
   return () => {
@@ -37,6 +39,7 @@ export class Pond {
   private ambient?: (ctx: CanvasRenderingContext2D, time: number) => void;
   private width = 0;
   private height = 0;
+  private hud: HudBox;
 
   get theme(): PondTheme {
     return POND_THEMES[this.themeId];
@@ -49,6 +52,24 @@ export class Pond {
     if (same) return;
     this.themeId = themeId;
     this.decorations = decorations;
+    if (this.background) this.build(this.width, this.height);
+  }
+
+  /** The current layout, for anything else drawing into the scene. */
+  get scene(): SceneBox {
+    return {
+      width: this.width,
+      height: this.height,
+      waterTop: this.waterTop,
+      groundY: this.groundY,
+      hud: this.hud,
+    };
+  }
+
+  /** Tells the scenery where the XP plank is, redrawing if it moved. */
+  setHud(hud: HudBox): void {
+    if (hud?.right === this.hud?.right && hud?.bottom === this.hud?.bottom) return;
+    this.hud = hud;
     if (this.background) this.build(this.width, this.height);
   }
 
@@ -71,7 +92,13 @@ export class Pond {
       g.fillRect(x, y, w, h);
     };
     const { colors: C, sky, ground, ambient } = this.theme;
-    const scene: SceneBox = { width, height, waterTop: this.waterTop, groundY: this.groundY };
+    const scene: SceneBox = {
+      width,
+      height,
+      waterTop: this.waterTop,
+      groundY: this.groundY,
+      hud: this.hud,
+    };
 
     // Sky in two soft bands.
     rect(C.skyTop, 0, 0, width, height);

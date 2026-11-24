@@ -27,8 +27,8 @@ body {
   left: 8px;
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 3px 6px;
+  gap: 4px;
+  padding: 2px 5px;
   background: #b07440;
   box-shadow:
     0 -2px 0 0 #3e2617,
@@ -38,8 +38,8 @@ body {
     inset 0 2px 0 0 #d39a5c,
     inset 0 -2px 0 0 #7d4e2b;
   color: #fff3dc;
-  font-size: 10px;
-  line-height: 14px;
+  font-size: 9px;
+  line-height: 12px;
   text-shadow: 1px 1px 0 #3e2617;
   /* Leave room for the wardrobe button on the right. */
   max-width: calc(100% - 60px);
@@ -62,7 +62,7 @@ body[data-hud='dark'] .floater {
 
 /* The XP bar: a groove carved into the plank, filling up with frog green. */
 .xp-bar {
-  width: 60px;
+  width: 42px;
   height: 4px;
   border: 2px solid #3e2617;
   background: #5a3620;
@@ -80,7 +80,7 @@ body[data-hud='dark'] .floater {
 /* Narrow sidebars: keep the plank on one line. The numbers are in its tooltip. */
 @media (max-width: 280px) {
   .xp-bar {
-    width: 36px;
+    width: 30px;
   }
 
   #xp-text {
@@ -422,4 +422,116 @@ body.calm .whisper.speaking {
   100% {
     opacity: 0;
   }
+}
+
+/* ── Holiday Pack ─────────────────────────────────────────────────────────
+   Locked items are faded with a little gold padlock (its pixel art comes in
+   --lock from Wardrobe.ts). Hovering or trying one on brings its colors back. */
+
+.tile {
+  position: relative;
+}
+
+.tile.locked canvas {
+  filter: grayscale(0.7) opacity(0.45);
+}
+
+.tile.locked:hover canvas,
+.tile.locked.previewing canvas {
+  filter: none;
+}
+
+.tile.locked::after {
+  content: '';
+  position: absolute;
+  right: 2px;
+  bottom: 2px;
+  width: 10px;
+  height: 12px;
+  background: var(--lock) center / 100% 100% no-repeat;
+  image-rendering: pixelated;
+}
+
+/* Trying a locked item on: a dashed border, so it isn't mistaken for worn. */
+.tile.previewing {
+  border-style: dashed;
+  border-color: #fff3dc;
+}
+
+.tile.free::after {
+  content: 'free';
+  position: absolute;
+  top: -6px;
+  right: -4px;
+  padding: 0 3px;
+  border: 1px solid #3e2617;
+  background: #2e8b57;
+  color: #fff3dc;
+  font-size: 8px;
+  font-weight: 700;
+  line-height: 10px;
+}
+
+/* The pack's header: a darker plank with the name, status and buttons. */
+.pack {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 6px;
+  padding: 4px 6px;
+  border: 2px solid #3e2617;
+  background: #7d4e2b;
+  box-shadow: inset 0 2px 0 #a86b3c;
+}
+
+.pack-title {
+  font-weight: 700;
+  color: #ffd166;
+  text-shadow: 1px 1px 0 #3e2617;
+}
+
+.pack-status {
+  flex: 1;
+  min-width: 0;
+  font-size: 10px;
+  text-shadow: 1px 1px 0 #3e2617;
+}
+
+.pack-buttons {
+  display: flex;
+  gap: 4px;
+}
+
+/* The Holiday tab's "new" star, twinkling at its corner. */
+.tab.new {
+  position: relative;
+}
+
+.tab.new::after {
+  content: '';
+  position: absolute;
+  top: -9px;
+  right: -9px;
+  width: 14px;
+  height: 14px;
+  background: var(--star) center / 100% 100% no-repeat;
+  filter: drop-shadow(1px 1px 0 #3e2617);
+  image-rendering: pixelated;
+  animation: twinkle 1.6s ease-in-out infinite;
+}
+
+@keyframes twinkle {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(0.7);
+    opacity: 0.6;
+  }
+}
+
+body.calm .tab.new::after {
+  animation: none;
 }

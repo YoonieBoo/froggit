@@ -13,6 +13,9 @@
     "url": "https://github.com/YoonieBoo/froggit/issues"
   },
   "homepage": "https://github.com/YoonieBoo/froggit#readme",
+  "sponsor": {
+    "url": "https://ko-fi.com/yooniestudio"
+  },
   "icon": "media/icon.png",
   "galleryBanner": {
     "color": "#2f5d3a",
@@ -58,6 +61,11 @@
         "category": "Froggit"
       },
       {
+        "command": "froggit.enterLicenseKey",
+        "title": "Enter License Key",
+        "category": "Froggit"
+      },
+      {
         "command": "froggit.resetProgress",
         "title": "Reset Progress",
         "category": "Froggit"
@@ -68,8 +76,13 @@
         "category": "Froggit"
       },
       {
-        "command": "froggit.debugWhisper",
-        "title": "Debug — Whisper Now",
+        "command": "froggit.debugTogglePack",
+        "title": "Debug — Lock/Unlock Holiday Pack",
+        "category": "Froggit"
+      },
+      {
+        "command": "froggit.debugNewYear",
+        "title": "Debug — New Year Party",
         "category": "Froggit"
       }
     ],
@@ -80,7 +93,11 @@
           "when": "froggit.devMode"
         },
         {
-          "command": "froggit.debugWhisper",
+          "command": "froggit.debugTogglePack",
+          "when": "froggit.devMode"
+        },
+        {
+          "command": "froggit.debugNewYear",
           "when": "froggit.devMode"
         }
       ]
@@ -96,29 +113,7 @@
         "froggit.reducedMotion": {
           "type": "boolean",
           "default": false,
-          "description": "Calmer pond: the frog stays put unless it's eating, with no confetti or water shimmer. Also turns on automatically when your operating system's 'reduce motion' setting is on."
-        },
-        "froggit.whispers.enabled": {
-          "type": "boolean",
-          "default": true,
-          "description": "Froggit Whispers: now and then, the frog says something encouraging in a little speech bubble."
-        },
-        "froggit.whispers.interval": {
-          "type": "number",
-          "enum": [
-            5,
-            10,
-            15,
-            30
-          ],
-          "enumItemLabels": [
-            "Every 5 minutes",
-            "Every 10 minutes",
-            "Every 15 minutes",
-            "Every 30 minutes"
-          ],
-          "default": 10,
-          "description": "How often the frog whispers. Only time with the pond on screen counts."
+          "description": "Calmer pond: the frog stays put unless it's eating, with no confetti, water shimmer or fireworks. Also turns on automatically when your operating system's 'reduce motion' setting is on."
         }
       }
     }
@@ -131,7 +126,8 @@
     "package": "vsce package",
     "pretest": "esbuild test/*.test.ts --bundle --platform=node --outdir=out-test --log-level=warning",
     "test": "node --test out-test/",
-    "demo-gif": "esbuild scripts/make-demo-gif.ts --bundle --platform=node --log-level=warning | node"
+    "demo-gif": "esbuild scripts/make-demo-gif.ts --bundle --platform=node --log-level=warning | node",
+    "license-keys": "esbuild scripts/license-keys.ts --bundle --platform=node --log-level=warning --outfile=out-test/license-keys.js && node out-test/license-keys.js"
   },
   "devDependencies": {
     "@types/node": "^20.19.43",

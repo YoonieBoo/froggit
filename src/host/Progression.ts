@@ -21,6 +21,18 @@ export class Progression {
     return describeProgress(this.store.load().xp);
   }
 
+  /** Whether the welcome hatch has played for this frog. */
+  get hatched(): boolean {
+    return this.store.load().hatched;
+  }
+
+  async markHatched(): Promise<void> {
+    const state = this.store.load();
+    if (state.hatched) return;
+    state.hatched = true;
+    await this.store.save(state);
+  }
+
   award(events: XpEvent[]): void {
     if (events.length === 0) return;
 

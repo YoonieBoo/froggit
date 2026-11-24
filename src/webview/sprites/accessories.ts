@@ -4,7 +4,7 @@
 // pixel of the head in the current frame (see headAnchor below). `dx`/`dy`
 // move the piece's top-left corner from there, in right-facing sprite pixels.
 
-import type { FaceId, HatId } from '../../shared/customization';
+import type { ExtraId, FaceId, HatId } from '../../shared/customization';
 
 export interface AccessoryArt {
   rows: string[];
@@ -62,6 +62,47 @@ export const HAT_ART: Record<HatId, AccessoryArt> = {
       '..........kkk',
     ],
   },
+  // The pompom flops back, away from the way the frog faces.
+  santa: {
+    dx: -1,
+    dy: -7,
+    rows: [
+      '.kk........',
+      'kwwk.......',
+      'kwwkkkk....',
+      '.kkMMMMk...',
+      '..kMMMMRk..',
+      '.kMMMMMMRk.',
+      'kwwwwwwwwwk',
+      'kkkkkkkkkkk',
+    ],
+  },
+  // One antler grows from each eye bump.
+  antlers: {
+    dx: -1,
+    dy: -5,
+    rows: [
+      'J..J...J..J',
+      '.J.J....JJ.',
+      '..JJ...J.J.',
+      '..J....J...',
+      '..J.....J..',
+    ],
+  },
+  'party-hat': {
+    dx: 1,
+    dy: -7,
+    rows: [
+      '..ppp..',
+      '..kpk..',
+      '..kck..',
+      '.kcOck.',
+      '.kccck.',
+      'kcOccOk',
+      'kccOcck',
+      'kkkkkkk',
+    ],
+  },
 };
 
 // Face pieces trace the outlines of both eyes, leaving the eyes themselves visible.
@@ -86,6 +127,40 @@ export const FACE_ART: Record<FaceId, AccessoryArt> = {
       '..kzxzkzxzzk',
       '.k.kkkkzzzzk',
       'k......kkkk.',
+    ],
+  },
+  // Gold rims with a couple of sparkles.
+  'party-glasses': {
+    dx: -3,
+    dy: -1,
+    rows: [
+      '..u.......u.',
+      '...OOO.OOOO.',
+      '..O...O....O',
+      '..O...O....O',
+      '.O.OOOO....O',
+      'O......OOOO.',
+    ],
+  },
+};
+
+// Extras hang below the face. The beard covers the mouth and throat; when the
+// frog eats, its tongue is drawn on top, so it still shoots out over the beard.
+export const EXTRA_ART: Record<ExtraId, AccessoryArt> = {
+  // A mustache over the mouth line, then a curly beard hanging below the chin.
+  // The mustache's top has no outline, so it blends into the cheek.
+  'santa-beard': {
+    dx: 3,
+    dy: 6,
+    rows: [
+      '...wwwk.',
+      '.wwwwWwk',
+      'kkkkkkkk',
+      'kwwwwwwk',
+      'kwWwwWk.',
+      '.kwwwwk.',
+      '.kwkwk..',
+      '..k.k...',
     ],
   },
 };

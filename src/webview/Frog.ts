@@ -13,6 +13,7 @@ import {
   FROG_IDLE_0,
   FROG_IDLE_1,
   FROG_JUMP,
+  FROG_SMILE,
 } from './sprites/frog';
 import { NOTICE_BUBBLE } from './sprites/fx';
 
@@ -25,6 +26,7 @@ type FrogState =
   | 'notice'
   | 'eat'
   | 'happy'
+  | 'smile'
   | 'celebrate';
 
 interface Point {
@@ -51,6 +53,7 @@ function createAnimations(heads: Map<Sprite, Point>): Record<FrogState, Animatio
     notice: { frames: [idle0], fps: 1, loop: true },
     eat: { frames: [frame(FROG_EAT)], fps: 1, loop: true },
     happy: { frames: [blink], fps: 1, loop: true },
+    smile: { frames: [frame(FROG_SMILE)], fps: 1, loop: true },
     celebrate: { frames: [crouch], fps: 1, loop: true },
   };
 }
@@ -77,6 +80,7 @@ const CRUMBS = ['#ffffff', '#f7f7ea'];
 const NOTICE_TIME = 0.45;
 const HAPPY_TIME = 0.5;
 const HAPPY_HEIGHT = 3;
+const SMILE_TIME = 2.6; // about as long as a holiday message stays up
 const CELEBRATE_BOUNCES = 3;
 const BOUNCE_TIME = 0.45;
 const BOUNCE_HEIGHT = 7;
@@ -103,7 +107,7 @@ export class Frog {
   private sceneWidth = 0;
 
   /** What it's wearing. Drawn on top of whatever frame is showing. */
-  private outfit: Outfit = { hat: null, face: null };
+  private outfit: Outfit = { hat: null, face: null, extra: null };
 
   private nextBlinkIn = randomBetween(2, 5);
   private nextActionIn = randomBetween(2, 4);
@@ -143,8 +147,26 @@ export class Frog {
       this.state === 'notice' ||
       this.state === 'eat' ||
       this.state === 'happy' ||
+      this.state === 'smile' ||
       this.state === 'celebrate'
     );
+  }
+
+  /** True while it's after a bug: noticing, chasing or eating. */
+  get hunting(): boolean {
+    return (
+      this.prey !== null || this.meals.length > 0 || this.state === 'notice' || this.state === 'eat'
+    );
+  }
+
+  /** True if a point (in logical pixels) is on the frog, its hat included, with a pixel to spare. */
+  contains(x: number, y: number): boolean {
+    return x >= this.x - 1 && x <= this.x + this.width && y >= this.topY - 1 && y <= this.y - this.lift + this.height;
+  }
+
+  /** Clicked: a little happy hop, if it isn't in the middle of something. */
+  poke(): void {
+    if (this.state === 'idle' || this.state === 'blink') this.enter('happy');
   }
 
   /** The highest pixel of the frog right now, including its hat and any hop. */
@@ -180,6 +202,13 @@ export class Frog {
   /** Celebrate once the current meals are finished. */
   queueCelebration(): void {
     this.celebratePending = true;
+  }
+
+  /** A little hop, confetti in the given colors, then a held smile. Ignored if the frog is busy. */
+  cheer(colors: string[]): void {
+    if (this.busy || (this.state !== 'idle' && this.state !== 'blink')) return;
+    this.particles.burst(this.centerX, this.y, 12, colors, 30);
+    this.enter('smile');
   }
 
   /** A quick "!" when new problems appear. Ignored if the frog is busy. */
@@ -264,6 +293,18 @@ export class Frog {
         break;
       }
 
+      case 'smile': {
+        // Bugs still come first: a new meal ends the smile.
+        if (this.meals.length > 0 && this.startNextTask()) {
+          this.lift = 0;
+          break;
+        }
+        const hop = Math.min(1, this.stateTime / HAPPY_TIME);
+        this.lift = hop < 1 ? HAPPY_HEIGHT * Math.sin(Math.PI * hop) : 0;
+        if (this.stateTime >= SMILE_TIME) this.enter('idle');
+        break;
+      }
+
       case 'celebrate':
         this.updateCelebration();
         break;
@@ -274,7 +315,8 @@ export class Frog {
     const frame = this.player.frame;
     const top = this.y - this.lift;
     screen.drawSprite(frame, this.x, top, this.facing === -1);
-    const { hat, face } = this.outfit;
+    const { hat, face, extra } = this.outfit;
+    if (extra) this.drawAccessory(screen, extra, frame, top);
     if (face) this.drawAccessory(screen, face, frame, top);
     if (hat) this.drawAccessory(screen, hat, frame, top);
 

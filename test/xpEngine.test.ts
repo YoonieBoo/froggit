@@ -95,4 +95,16 @@ describe('migrateProgress', () => {
     assert.equal(broken.stats.bugsEaten, 0);
     assert.equal(broken.daily.earned, 0);
   });
+
+  it('gives the welcome hatch only to frogs that never hatched', () => {
+    const fresh = defaultProgress(NOON);
+    assert.equal(fresh.hatched, false);
+    // Saved before 0.3.0 (no `hatched` field): grown frogs skip it, eggs get it.
+    const { hatched: _, ...old } = fresh;
+    assert.equal(migrateProgress({ ...old, xp: 120 }, NOON).hatched, true);
+    assert.equal(migrateProgress({ ...old, xp: 10 }, NOON).hatched, false);
+    // Saved by 0.3.0: kept as stored, whatever the XP.
+    assert.equal(migrateProgress({ ...fresh, xp: 500, hatched: false }, NOON).hatched, false);
+    assert.equal(migrateProgress({ ...fresh, xp: 0, hatched: true }, NOON).hatched, true);
+  });
 });

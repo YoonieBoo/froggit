@@ -10,7 +10,7 @@ const HATCH_SHAKE_TIME = 1.2;
 const HATCH_CRACK_TIME = 0.6;
 const SHELL_COLORS = ['#f3ecd2', '#d8cba3', '#8fcf6a'];
 
-/** The first stage: an egg that wobbles now and then, and hatches on level-up. */
+/** The welcome egg: shown for a moment to a brand-new frog, then it hatches. */
 export class Egg {
   x = 0;
   y = 0;
@@ -25,6 +25,11 @@ export class Egg {
   private onHatched?: () => void;
 
   constructor(private readonly particles: Particles) {}
+
+  /** True if a point (in logical pixels) is on the egg, with a pixel to spare. */
+  contains(x: number, y: number): boolean {
+    return x >= this.x - 1 && x <= this.x + this.width && y >= this.y - 1 && y <= this.y + this.height;
+  }
 
   get centerX(): number {
     return this.x + this.width / 2;

@@ -106,3 +106,21 @@ export const FROG_BLINK = [
   '.kGGGkkglkkglk..',
   '..kkk..kk..kkk..',
 ];
+
+// Eyes closed in happy arcs and the mouth curling up: for holiday moments.
+export const FROG_SMILE = [
+  '.......kkk.kkkk.',
+  '......kgggkggggk',
+  '......kgkgkgkkgk',
+  '.....kkkgkkkggkk',
+  '....kgggggggggk.',
+  '...khhggggggggk.',
+  '..khggggggggpgk.',
+  '..kgggggggggpkk.',
+  '.kGggggkkkkkk...',
+  'kGGggggkllllk...',
+  'kGGGggglllllk...',
+  'kGGGGgglllllk...',
+  '.kGGGkkglkkglk..',
+  '..kkk..kk..kkk..',
+];

@@ -3,6 +3,8 @@
 export interface ProgressState {
   v: 1;
   xp: number;
+  /** Whether the welcome hatch has played. */
+  hatched: boolean;
   createdAt: number;
   lastCleanAt: number;
   stats: {
@@ -18,6 +20,9 @@ export interface ProgressState {
   };
 }
 
+/** Where eggs used to hatch, before 0.3.0 made everyone start as a frog. */
+const OLD_HATCH_XP = 40;
+
 export function localDateKey(now: number): string {
   const d = new Date(now);
   const pad = (n: number) => String(n).padStart(2, '0');
@@ -28,6 +33,7 @@ export function defaultProgress(now: number): ProgressState {
   return {
     v: 1,
     xp: 0,
+    hatched: false,
     createdAt: now,
     lastCleanAt: 0,
     stats: { bugsEaten: 0, cleans: 0, sessions: 0 },
@@ -48,6 +54,9 @@ export function migrateProgress(raw: unknown, now: number): ProgressState {
   return {
     v: 1,
     xp: count(raw.xp),
+    // Saves from before 0.3.0 have no `hatched`: those frogs hatched at 40 XP,
+    // so only users who were still eggs get the welcome.
+    hatched: typeof raw.hatched === 'boolean' ? raw.hatched : count(raw.xp) >= OLD_HATCH_XP,
     createdAt: count(raw.createdAt) || now,
     lastCleanAt: count(raw.lastCleanAt),
     stats: {
