@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.3.0
+
+- New frogs now start as a Baby Frog straight away, after a quick hatch the first time you open the pond. The Egg stage is gone.
+- Click the frog and it says something nice. This replaces the timed whispers, so the `froggit.whispers.enabled` and `froggit.whispers.interval` settings are gone.
+- A smaller XP plank, so it covers less of the pond.
+- New Holiday tab in the wardrobe, with a free Santa hat.
+- Free New Year party: at midnight on January 1st, night falls over the pond, fireworks go off and a crowd of frogs joins yours for a minute.
+- README: new GIFs recorded from the real pond.
+- Holiday Pack ($0.99, one-time): Snowy and Fireworks ponds with holiday messages in the sky, plus reindeer antlers, a party hat, party glasses and a Santa beard. Locked items can be tried on before buying. Unlock with **Froggit: Enter License Key**; keys are checked offline.
+
 ## 0.2.0
 
 - Wardrobe: a wooden button in the corner of the pond opens a menu for dressing up the frog and changing its pond.

@@ -5,15 +5,29 @@
 
 A cozy pixel-art frog that lives in your VS Code sidebar and **eats your bugs as you fix them**.
 
-![Froggit: an egg hatches, bugs fly in, and the frog eats each one as errors get fixed, then celebrates](images/demo.gif)
+![The frog hatches, bugs fly in, and the frog eats each one as errors get fixed, then celebrates](images/demo.gif)
 
-When your code has errors, little beetles fly into the frog's pond. Fix an error and the frog
-hops over and snaps one up with its tongue. Get everything clean and it celebrates. Keep coding,
-and your frog grows up, starting from an egg.
+Froggit puts a small pond in your Explorer sidebar with a frog living in it. When your code has
+errors, little beetles fly into the pond. Fix an error and the frog hops over and snaps one up
+with its tongue. Get everything clean and it celebrates. The more you code, the more your frog
+grows up.
 
-You can also dress it up, change its pond, and let it cheer you on now and then.
+It's meant to sit quietly in the corner while you work, and make fixing bugs a little more fun.
 
-## How it works
+## Getting started
+
+1. Install **Froggit** from the [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=yoonie-studio.froggit), or search for "Froggit" in the Extensions view.
+2. Open the **Explorer** sidebar and expand **Frog Pond** (or run **Froggit: Show Pond** from the Command Palette).
+3. Your frog hatches the first time you open the pond. Then just code as usual.
+
+You can drag the pond into the bottom panel if you'd like a wider view.
+
+## Your frog and its pond
+
+When nothing is going on, the frog sits by the water, breathes, blinks, and now and then hops
+somewhere else along the bank.
+
+Bugs in the pond come from VS Code's own **Problems** list:
 
 | In your code | In the pond |
 | --- | --- |
@@ -25,13 +39,21 @@ You can also dress it up, change its pond, and let it cheer you on now and then.
 The pond doesn't show one bug per problem, so 25 errors won't flood your sidebar. Up to 3 errors
 show one beetle each; beyond that the swarm grows slowly to a maximum of 6 beetles and 3 gnats.
 
-Bugs come from VS Code's own **Problems** list, so they work with any language that reports
-problems: TypeScript, Python, Rust, ESLint, and so on. Note that many language tools only report
-problems for files that are **open**.
+This works with any language that reports problems to VS Code: TypeScript, Python, Rust, ESLint,
+and so on. Many language tools only report problems for files that are **open**, so the pond
+follows what's in your Problems panel.
+
+## Say hi
+
+![Clicking the frog, which answers with a different message each time](images/whisper.gif)
+
+Click the frog and it says something nice, like "proud of you!", "one bug at a time!" or "don't
+forget water!". Each click gets a different message. It won't talk while it's busy eating a bug.
 
 ## Growing up
 
-Your frog earns XP from real coding activity:
+Your frog earns XP from real coding activity. The wooden plank in the top-left corner shows its
+stage and XP. On a narrow sidebar it hides the numbers; hover over it to see them.
 
 | Activity | XP |
 | --- | --- |
@@ -41,81 +63,85 @@ Your frog earns XP from real coding activity:
 | Save a file with real changes | +1 |
 | 25 minutes of active coding | +15 |
 
-**Egg** → **Baby Frog** (40 XP) → **Developer Frog** (600 XP) → **Senior Frog** (2500 XP)
+**Baby Frog** → **Developer Frog** (600 XP) → **Senior Frog** (2500 XP)
 
-XP is designed to reward coding, not gaming the system: problems must exist for at least 15
-seconds before fixing them counts, saves only count when the file actually changed (and at most
-once a minute per file), and there are hourly and daily limits.
+XP rewards coding, not gaming the system: a problem has to exist for at least 15 seconds before
+fixing it counts, saves only count when the file actually changed (at most once a minute per
+file), and there are short-term and daily limits.
 
-Progress is saved on your machine and follows you across all your projects. If you use
-Settings Sync, it follows you to other machines too.
+Progress is saved on your machine and follows you across all your projects. With Settings Sync
+on, it follows you to other machines too.
 
-## Outfits, ponds and whispers
+## Wardrobe
 
-New in 0.2. Click the wooden hanger button in the top-right corner of the pond to open the
-wardrobe.
+Click the wooden hanger in the top-right corner of the pond to open the wardrobe. It has three
+tabs: Outfit, Pond and Holiday.
 
-![The frog tries on outfits, then visits the Moonlight, Sakura and Autumn ponds, saying something encouraging along the way](images/customize.gif)
+![Opening the wardrobe, trying on hats and glasses, then switching to the Moonlight pond and adding decorations](images/wardrobe.gif)
 
-### Outfits
+**Outfit.** Four hats (mushroom hat, golden crown, wizard hat, baseball cap) and two pairs of
+glasses (round glasses, sunglasses). The frog wears one hat and one pair of glasses at a time,
+and the first tile on each shelf takes it off. Each tile shows your frog wearing that item, and
+the outfit stays on while the frog hops, eats and celebrates.
 
-![The wardrobe's Outfit tab, with shelves of hats and glasses](images/wardrobe-outfit.png)
-
-The **Outfit** tab has four hats (mushroom hat, golden crown, wizard hat, baseball cap) and two
-kinds of glasses (round glasses, sunglasses). The frog can wear one hat and one pair of glasses
-at a time. The first tile on each shelf takes it off again. Each tile shows your frog wearing that
-item, so you can see how it looks before you pick it.
-
-The outfit stays on while the frog hops, eats and celebrates.
-
-### Ponds and decorations
-
-![The wardrobe's Pond tab, with the four ponds and five decorations](images/wardrobe-pond.png)
-
-The **Pond** tab has four ponds: Classic, Moonlight, Sakura and Autumn. Each tile is a small
-preview of that pond, and clicking one switches to it straight away.
-
-Below them you can turn decorations on or off: a flower patch, a lantern, a lily pad flower,
-shore rocks and mushrooms. Each one has its own spot, and they all sit behind the frog and the
-bugs, so bugs are always easy to see. **Reset pond** goes back to the Classic pond with no
-decorations.
+**Pond.** Four ponds: Classic, Moonlight, Sakura and Autumn. Below them you can turn decorations
+on or off: a flower patch, a lantern, a lily pad flower, shore rocks and mushrooms. Decorations
+sit behind the frog and the bugs, so bugs are always easy to see. **Reset pond** goes back to the
+Classic pond with no decorations.
 
 Your outfit, pond and decorations are saved, follow you across projects, and stay as they are
-when you use **Reset Progress**.
+if you reset your progress.
 
-### Whispers
+## Holiday
 
-![The frog on the Sakura pond, saying "you got this" in a small speech bubble](images/whisper.png)
+![Trying on holiday items in the Holiday tab, unlocking the pack, then the Snowy pond under "merry christmas" and the Fireworks pond under "happy new year"](images/holiday.gif)
 
-Every 10 minutes the frog says something encouraging in a small speech bubble, like "proud of
-you!" or "don't forget water!". Only time with the pond on screen counts. The frog doesn't talk
-while it's busy eating bugs, and it doesn't save up messages while you're away. You can change
-how often it whispers, or turn it off, in the settings below.
+The **Holiday** tab, marked with a little star, has seasonal items.
 
-## Getting started
+**Free for everyone:** the **Santa hat**.
 
-1. Install **Froggit** from the [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=yoonie-studio.froggit), or search for "Froggit" in the Extensions view.
-2. Open the **Explorer** sidebar and expand **Frog Pond** (or run **Froggit: Show Pond**).
-3. Code as usual. You can drag the pond to the bottom panel if you prefer a wider view.
+**Holiday Pack** ($0.99, one-time):
+
+- **Snowy Pond**: snow, pine trees and a lit-up Christmas tree. Every so often "merry christmas"
+  lights up the sky and your frog smiles.
+- **Fireworks Pond**: a party night sky with fireworks and "happy new year".
+- **Reindeer antlers**, a **party hat**, **party glasses** and a **Santa beard**.
+
+Locked items are shown faded with a small padlock. Click one to try it on: your frog wears it in
+the wardrobe's preview, so you can see how it looks before buying.
+
+To get the pack, click **Buy** in the Holiday tab. After paying, you download a short PDF with
+your license key (your receipt email links to it too). Run **Froggit: Enter License Key** from the Command
+Palette and paste it in. The key is checked on your machine, with no account and no internet
+needed. With Settings Sync on, the pack is unlocked on your other machines too.
+
+## New Year party
+
+![At midnight the pond turns to night, "happy new year" appears with fireworks, and a crowd of frogs in party hats hops along the bank](images/party.gif)
+
+At midnight on January 1st, by your computer's clock, night falls over whatever pond you're on.
+Fireworks go off, "happy new year" lights up the sky, and a crowd of frogs shows up to celebrate
+with yours for a minute. Free for everyone, no pack needed.
 
 ## Settings
 
 | Setting | Default | Description |
 | --- | --- | --- |
 | `froggit.countWarnings` | `true` | Show warnings as gnats and award XP for fixing them. Turn off if a linter reports many warnings you don't plan to fix. |
-| `froggit.reducedMotion` | `false` | Calmer pond: the frog stays put unless it's eating, with no confetti, water shimmer or falling petals. Also turns on automatically when your OS "reduce motion" setting is on. |
-| `froggit.whispers.enabled` | `true` | Let the frog say something encouraging now and then. |
-| `froggit.whispers.interval` | `10` | Minutes between whispers: 5, 10, 15 or 30. |
+| `froggit.reducedMotion` | `false` | Calmer pond: the frog stays put unless it's eating, with no confetti, water shimmer, falling petals or fireworks. Also turns on automatically when your OS "reduce motion" setting is on. |
 
 ## Commands
 
 - **Froggit: Show Pond** opens the pond.
-- **Froggit: Reset Progress** starts over from an egg. It asks first, and keeps your outfit and pond.
+- **Froggit: Enter License Key** unlocks the Holiday Pack.
+- **Froggit: Reset Progress** starts over with a new frog. It asks first, and keeps your outfit, pond and packs.
 
 ## Privacy and safety
 
 - **Never touches your code.** The frog only reads the Problems list; it never edits files.
-- **Works fully offline.** No network requests, no accounts, no telemetry.
+- **Works offline.** No network requests, no accounts, no telemetry. License keys are checked
+  locally. The only time anything goes online is when you click Buy, which opens the store in
+  your browser.
 - **The pond only sees counts.** File names, paths and code are never sent to the pond view.
 - The pond runs in a locked-down webview with a strict Content Security Policy.
 
@@ -124,18 +150,22 @@ how often it whispers, or turn it off, in the settings below.
 ```bash
 npm install
 npm run build      # bundle extension + pond
-npm run typecheck  # type-check both
-npm test           # unit tests (XP rules, diagnostics diffing, bug mapping, saved looks, whispers)
+npm run typecheck  # type-check everything
+npm test           # unit tests
 npm run package    # build a .vsix
-npm run demo-gif   # re-render the README GIFs from the sprites
+npm run demo-gif   # re-render the opening GIF from the sprites
 ```
 
 Press **F5** (or **Run > Start Debugging**) in VS Code to launch a development window with the
-`playground/` folder, which contains deliberate errors and warnings to test with. In development
-mode there are two extra commands: **Froggit: Debug - Add 10 XP** and **Froggit: Debug - Whisper
-Now**.
+`playground/` folder, which has deliberate errors and warnings to test with. Development mode adds
+a few debug commands: add 10 XP, lock or unlock the Holiday Pack, and start the New Year party.
 
 All art is original and drawn in code (see `src/webview/sprites/`).
+
+## Support
+
+Froggit is made by one person. If it makes your day a little nicer, you can
+[buy me a coffee on Ko-fi](https://ko-fi.com/yooniestudio).
 
 ## License
 
